@@ -1142,8 +1142,6 @@ class TriggerSSHMultiplexConnection(TriggerSSHConnection):
 # ==================
 #  SSH PTY Stuff
 # ==================
-
-
 class Interactor(protocol.Protocol):
     """
     Creates an interactive shell.
@@ -1182,25 +1180,20 @@ class Interactor(protocol.Protocol):
     def dataReceived(self, data):
 
         # Check whether we need to send an enable password.
-        if not self.enabled and requires_enable(self, data):
-            #log.msg('[%s] Interactive PTY requires enable commands' % self.device)
+        if not self.enabled and requires_enable(self, data.decode('utf-8')):
+            log.msg('[%s] Interactive PTY requires enable commands' % self.device)
             send_enable(self, disconnect_on_fail=False)  # Don't exit on fail
         
         # Setup and run the initial commands, and also assume we're enabled
         if data and not self.initialized:
-            # Wait for a prompt of some sort to become available before we send
-            # init commands.
+            # Wait for a prompt and then we send init commands.
             if self.prompt.search(data.decode('utf-8')):
-                log.msg('[%s] PROMPT MATCHED: %r' % (self.device, data))
+                log.msg('[%s] PROMPT MATCHED: %r' % (self.device, data.decode('utf-8')))
                 self.enabled = True  # Forcefully set enable
                 self.factory._init_commands(protocol=self)
                 self.initialized = True
 
-        #self._log(bytes)
-        if type(data) == str:
-            self.stdio.write(bytes(data,'utf-8'))
-        else:
-            self.stdio.write(data)
+        self.stdio.write(data)
 
 
 class TriggerSSHPtyChannel(channel.SSHChannel):
@@ -1212,11 +1205,7 @@ class TriggerSSHPtyChannel(channel.SSHChannel):
 
     def channelOpen(self, data):
         """Setup the terminal when the channel opens."""
-        pr = session.packRequest_pty_req(settings.TERM_TYPE,
-                                         self._get_window_size(), '')
-
-        #data = session.packRequest_pty_req(settings.TERM_TYPE, (24, 80, 0, 0), '')
-        #self.conn.sendRequest(self, 'pty-req', data, 1)
+        pr = session.packRequest_pty_req(settings.TERM_TYPE, self._get_window_size(), '')
         self.conn.sendRequest(self, 'pty-req', pr, 1)
         self.conn.sendRequest(self, 'shell', b'', 1)
         signal.signal(signal.SIGWINCH, self._window_resized)
@@ -1244,11 +1233,10 @@ class TriggerSSHPtyChannel(channel.SSHChannel):
         winsz = fcntl.ioctl(stdin_fileno, tty.TIOCGWINSZ, '12345678')
         return struct.unpack('4H', winsz)
 
+
 # ==================
 #  SSH Channels
 # ==================
-
-
 class TriggerSSHChannelBase(channel.SSHChannel, TimeoutMixin, object):
     """
     Base class for SSH channels.
@@ -1828,11 +1816,10 @@ class IncrementalXMLTreeBuilder(TreeBuilder):
         """Do this when we're out of XML!"""
         return self._endhandler(TreeBuilder._end(self, tag))
 
+
 # ==================
 #  Telnet Channels
 # ==================
-
-
 class TriggerTelnetClientFactory(TriggerClientFactory):
     """
     Factory for a telnet connection.
@@ -1848,9 +1835,7 @@ class TriggerTelnetClientFactory(TriggerClientFactory):
         TriggerClientFactory.__init__(self, deferred, creds, init_commands)
 
 
-class TriggerTelnet(telnet.Telnet,
-                    telnet.ProtocolTransportMixin,
-                    TimeoutMixin):
+class TriggerTelnet(telnet.Telnet, telnet.ProtocolTransportMixin, TimeoutMixin):
     """
     Telnet-based session login state machine. Primarily used by IOS-like type
     devices.
@@ -1859,14 +1844,13 @@ class TriggerTelnet(telnet.Telnet,
     def __init__(self, timeout=settings.TELNET_TIMEOUT):
         self.protocol = telnet.TelnetProtocol()
         self.waiting_for = [
-            ('Username: ', self.state_username),                   # Most
-            ('Please Enter Login Name  : ', self.state_username),  # OLD Fndry
-            ('Username:', self.state_username),                   # Dell
-            ('login: ', self.state_username),                      # EOS, JunOs
-            ('Password: ', self.state_login_pw),
-            ('Password:', self.state_login_pw),
+            (b'Username: ', self.state_username),                   # Most
+            (b'Username:', self.state_username),                   # Dell
+            (b'login: ', self.state_username),                      # EOS, JunOs
+            (b'Password: ', self.state_login_pw),
+            (b'Password:', self.state_login_pw),
         ]
-        self.data = ''
+        self.data = b''
         self.applicationDataReceived = self.login_state_machine
         self.timeout = timeout
         self.setTimeout(self.timeout)
@@ -1879,6 +1863,7 @@ class TriggerTelnet(telnet.Telnet,
         reason Arista Networks hardware is the only vendor that needs this
         method right now.
         """
+        
         # log.msg('[%s] enableRemote option: %r' % (self.host, option))
         log.msg('enableRemote option: %r' % option)
         return True
@@ -1887,18 +1872,19 @@ class TriggerTelnet(telnet.Telnet,
         """Track user login state."""
 
         self.host = self.transport.connector.host
-        log.msg('[%s] CONNECTOR HOST: %s' % (self.host,
-                                             self.transport.connector.host))
-        self.data += bytes.decode('utf-8')
-        log.msg('[%s] STATE:  got data %r' % (self.host, self.data))
+        log.msg('[%s] CONNECTOR HOST: %s' % (self.host, self.transport.connector.host))
+        #self.data += bytes.decode('utf-8')
+        #CHANGE
+        self.data += bytes
+
+        log.msg('[%s] STATE:  got data %r' % (self.host, self.data.decode('utf-8')))
         for (text, next_state) in self.waiting_for:
-            log.msg('[%s] STATE:  possible matches %r' % (self.host, text))
+            log.msg('[%s] STATE:  possible matches %r' % (self.host, text.decode('utf-8')))
             if self.data.endswith(text):
-                log.msg('[%s] Entering state %r' % (self.host,
-                                                    next_state.__name__))
+                log.msg('[%s] Entering state %r' % (self.host, next_state.__name__))
                 self.resetTimeout()
                 next_state()
-                self.data = ''
+                self.data = b''
                 break
 
     def state_username(self):
@@ -1907,25 +1893,24 @@ class TriggerTelnet(telnet.Telnet,
         data = self.factory.creds.username + '\n'
         self.write(data.encode())
         self.waiting_for = [
-            ('Password: ', self.state_password),
-            ('Password:', self.state_password),  # Dell
+            (b'Password: ', self.state_password),
+            (b'Password:', self.state_password),  # Dell
         ]
 
         
     def state_password(self):
         """After we got password prompt, check for enabled prompt."""
-        # print(self.factory.creds.password)
         data = self.factory.creds.password + '\n'
         self.write(data.encode())
         
         self.waiting_for = [
-            ('#', self.state_logged_in),
-            ('>', self.state_enable),
-            ('> ', self.state_logged_in),              # Juniper
-            ('\n% ', self.state_percent_error),
-            ('# ', self.state_logged_in),              # Dell
-            ('\nUsername: ', self.state_raise_error),  # Cisco
-            ('\nlogin: ', self.state_raise_error),     # Arista, Juniper
+            (b'#', self.state_logged_in),
+            (b'>', self.state_enable),
+            (b'> ', self.state_logged_in),              # Juniper
+            (b'\n% ', self.state_percent_error),
+            (b'# ', self.state_logged_in),              # Dell
+            (b'\nUsername: ', self.state_raise_error),  # Cisco
+            (b'\nlogin: ', self.state_raise_error),     # Arista, Juniper
         ]
 
     def state_logged_in(self):
@@ -1935,8 +1920,8 @@ class TriggerTelnet(telnet.Telnet,
         """
 
         self.setTimeout(None)
-        data = self.data.lstrip('\n')
-        log.msg('[%s] state_logged_in, DATA: %r' % (self.host, data))
+        data = self.data.lstrip(b'\n')
+        log.msg('[%s] state_logged_in, DATA: %r' % (self.host, data.decode('utf-8')))
         del self.waiting_for, self.data
 
         # Run init_commands
@@ -1962,9 +1947,9 @@ class TriggerTelnet(telnet.Telnet,
         log.msg("[%s] ENABLE: Sending command: enable" % self.host)
         self.write('enable\n'.encode())
         self.waiting_for = [
-            ('Password: ', self.state_enable_pw),  # Foundry
-            ('Password:', self.state_enable_pw),   # Dell
-            ('#', self.state_logged_in),   # Dell
+            (b'Password: ', self.state_enable_pw),  # Foundry
+            (b'Password:', self.state_enable_pw),   # Dell
+            (b'#', self.state_logged_in),   # Dell
         ]
 
     def state_login_pw(self):
@@ -1978,37 +1963,40 @@ class TriggerTelnet(telnet.Telnet,
         # Workaround to avoid TypeError when concatenating 'NoneType' and
         # 'str'. This *should* result in a LoginFailure.
         if pw is None:
-            pw = ''
+            pw = b''
 
         # log.msg('Sending password %s' % pw)
-        self.write(pw + '\n')
-        self.waiting_for = [('>', self.state_enable),
-                            ('#', self.state_logged_in),
-                            ('\n% ', self.state_percent_error),
-                            ('incorrect password.', self.state_raise_error)]
+        self.write(pw + b'\n')
+        self.waiting_for = [(b'>', self.state_enable),
+                            (b'#', self.state_logged_in),
+                            (b'\n% ', self.state_percent_error),
+                            (b'incorrect password.', self.state_raise_error)]
 
     def state_enable_pw(self):
         """Pass the enable password from the factory or NetDevices"""
+        
         if self.factory.enablepw:
             pw = self.factory.enablepw
         else:
             from trigger.netdevices import NetDevices
             pw = NetDevices().find(self.host).enablePW
-        # log.msg('Sending password %s' % pw)
-        self.write(pw + '\n')
-        self.waiting_for = [('#', self.state_logged_in),
-                            ('\n% ', self.state_percent_error),
-                            ('incorrect password.', self.state_raise_error)]
+        log.msg('Sending password %s' % pw.decode('utf-8'))
+        self.write(pw.encode('utf-8') + b'\n')
+        self.waiting_for = [(b'#', self.state_logged_in),
+                            (b'\n% ', self.state_percent_error),
+                            (b'incorrect password.', self.state_raise_error)]
 
     def state_percent_error(self):
         """
         Found a % error message. Don't return immediately because we
         don't have the error text yet.
         """
-        self.waiting_for = [('\n', self.state_raise_error)]
+        
+        self.waiting_for = [(b'\n', self.state_raise_error)]
 
     def state_raise_error(self):
         """Do this when we get a login failure."""
+        
         self.waiting_for = []
         log.msg('Failed logging into %s' % self.transport.connector.host)
         self.factory.err = exceptions.LoginFailure('%r' % self.data.rstrip())
@@ -2016,10 +2004,9 @@ class TriggerTelnet(telnet.Telnet,
 
     def timeoutConnection(self):
         """Do this when we timeout logging in."""
-        log.msg('[%s] '
-                'Timed out while logging in' % self.transport.connector.host)
-        self.factory.err = exceptions.LoginTimeout('Timed out while '
-                                                   'logging in')
+        
+        log.msg('[%s] Timed out while logging in' % self.transport.connector.host)
+        self.factory.err = exceptions.LoginTimeout('Timed out while logging in')
         self.loseConnection()
 
 
@@ -2031,8 +2018,7 @@ class IoslikeSendExpect(protocol.Protocol, TimeoutMixin):
     one errors. Wait for a prompt after each.
     """
     
-    def __init__(self, device, commands, incremental=None, with_errors=False,
-                 timeout=None, command_interval=0):
+    def __init__(self, device, commands, incremental=None, with_errors=False, timeout=None, command_interval=0):
         self.device = device
         self._commands = commands
         self.commanditer = iter(commands)
@@ -2042,15 +2028,15 @@ class IoslikeSendExpect(protocol.Protocol, TimeoutMixin):
         self.command_interval = command_interval
         self.prompt = re.compile(settings.IOSLIKE_PROMPT_PAT)
         self.startup_commands = copy.copy(self.device.startup_commands)
-        log.msg('[%s] My initialize commands: %r' % (self.device,
-                                                     self.startup_commands))
+        log.msg('[%s] My initialize commands: %r' % (self.device, self.startup_commands))
         self.initialized = False
 
     def connectionMade(self):
         """Do this when we connect."""
+        
         self.setTimeout(self.timeout)
         self.results = self.factory.results = []
-        self.data = ''
+        self.data = b''
         log.msg('[%s] connectionMade, data: %r' % (self.device, self.data))
 
         # Don't call _send_next, since we expect to see a prompt, which
@@ -2058,18 +2044,19 @@ class IoslikeSendExpect(protocol.Protocol, TimeoutMixin):
 
     def dataReceived(self, bytes):
         """Do this when we get data."""
+        
         log.msg('[%s] BYTES: %r' % (self.device, bytes))
+        
         self.data += bytes
-        # print(self.data)
         # See if the prompt matches, and if it doesn't, see if it is waiting
         # for more input (like a [y/n]) prompt), and continue, otherwise return
         # None
-        m = self.prompt.search(self.data)
+        
+        m = self.prompt.search(self.data.decode('utf-8'))
         if not m:
             # If the prompt confirms set the index to the matched bytes,
             if is_awaiting_confirmation(self.data):
-                log.msg('[%s] Got confirmation prompt: %r' % (self.device,
-                                                              self.data))
+                log.msg('[%s] Got confirmation prompt: %r' % (self.device, self.data.decode('utf-8')))
                 prompt_idx = self.data.find(bytes)
             else:
                 return None
@@ -2078,10 +2065,12 @@ class IoslikeSendExpect(protocol.Protocol, TimeoutMixin):
             prompt_idx = m.start()
 
         result = self.data[:prompt_idx]
+        
         # Trim off the echoed-back command.  This should *not* be necessary
         # since the telnet session is in WONT ECHO.  This is confirmed with
         # a packet trace, and running self.transport.dont(ECHO) from
         # connectionMade() returns an AlreadyDisabled error.  What's up?
+        
         log.msg('[%s] result BEFORE: %r' % (self.device, result))
         result = result[result.find('\n')+1:]
         log.msg('[%s] result AFTER: %r' % (self.device, result))
