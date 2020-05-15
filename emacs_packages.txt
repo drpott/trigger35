@@ -1,0 +1,4 @@
+package-activated-list is a variable defined in ‘package.el’.                                                                                                                                                    
+  Its value is                                                                                                                                                                                                     
+  (better-defaults conda elpy company exec-path-from-shell highlight-indentation jedi-direx direx jedi auto-complete jedi-core epc ctable concurrent material-theme popup popwin pyenv-mode python-environment def\
+       erred pythonic f pyvenv rope-read-mode virtualenvwrapper s dash yasnippet)  
