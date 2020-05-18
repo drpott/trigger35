@@ -43,6 +43,7 @@ def get_device_password(device=None, tcrc=None):
     :param device:
         Optional `~trigger.tacacsrc.Tacacsrc` instance
     """
+    
     if tcrc is None:
         tcrc = Tacacsrc()
 
@@ -54,6 +55,7 @@ def get_device_password(device=None, tcrc=None):
         creds = prompt_credentials(device)
         tcrc.creds[device] = creds
         tcrc.write()
+
     return creds
 
 
@@ -69,33 +71,25 @@ def prompt_credentials(device, user=None):
         raise MissingRealmName('You must specify a device/realm name.')
 
     creds = ()
-    # Make sure we can even get tty i/o!
-    if sys.stdin.isatty() and sys.stdout.isatty():
-        print('\nUpdating credentials for device/realm %r' % device)
+    print('\nUpdating credentials for device/realm %r' % device)
 
-        user_default = ''
-        if user:
-            user_default = ' [%s]' % user
+    user_default = ''
+    if user:
+        user_default = ' [%s]' % user
+    
+    username = getpass._raw_input('Username%s: ' % user_default) or user
+    if username == '':
+        print('\nYou must specify a username, try again!')
+        return prompt_credentials(device, user=user)
 
-        username = getpass._raw_input('Username%s: ' % user_default) or user
-        if username == '':
-            print('\nYou must specify a username, try again!')
-            return prompt_credentials(device, user=user)
+    passwd = getpass.getpass('Password: ')
+    if not passwd:
+        print('\nPassword cannot be blank, try again!')
+        return prompt_credentials(device, user=username)
 
-        passwd = getpass.getpass('Password: ')
-        passwd2 = getpass.getpass('Password (again): ')
-        if not passwd:
-            print('\nPassword cannot be blank, try again!')
-            return prompt_credentials(device, user=username)
-
-        if passwd != passwd2:
-            print('\nPasswords did not match, try again!')
-            return prompt_credentials(device, user=username)
-
-        creds = Credentials(username, passwd, device)
+    creds = Credentials(username, passwd, device)
 
     return creds
-
 
 def update_credentials(device, username=None):
     """
@@ -183,7 +177,6 @@ def _gpg_pipe(file_name, gpguser, gpgkey, data=None):
     if data != None: #encrypt_here
         cmd = 'gpg2 --batch --yes --quiet -e -r '+gpguser+' -o '
         cmd += file_name
-        # print(cmd)
         p = subprocess.Popen(shlex.split(cmd), stdin=subprocess.PIPE,
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                              close_fds=False)

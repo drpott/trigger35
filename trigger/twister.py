@@ -227,9 +227,8 @@ def pty_connect(device, action, creds=None, display_banner=None,
 
     :returns: A Twisted ``Deferred`` object
     """
-
+    
     d = defer.Deferred()
-
     # Only proceed if ping succeeds
     if ping_test:
         log.msg('Pinging %s' % device, debug=True)
@@ -237,19 +236,17 @@ def pty_connect(device, action, creds=None, display_banner=None,
             log.msg('Ping to %s failed' % device, debug=True)
             return None
 
+    if not creds and (device.is_olt() or device.is_firewall()):
+        creds = tacacsrc.get_device_password(device.nodeName)
+        
     # SSH?
-    if device.can_ssh_pty() and not device.is_olt():
-        interactive = hasattr(sys, 'ps1')
-        all_tty = all(x.isatty() for x in (sys.stderr, sys.stdin, sys.stdout))
+    if device.can_ssh_pty():
         log.msg('[%s] SSH connection test PASSED' % device)
-        if interactive or not all_tty:
-            # Shell not in interactive mode.
-            pass
-
-        else:
-            if not creds and device.is_firewall():
-                creds = tacacsrc.get_device_password(device.nodeName)
-
+        """
+        if not creds:
+            creds = tacacsrc.get_device_password(device.nodeName)
+        """
+        
         factory = TriggerSSHPtyClientFactory(d, action, creds, display_banner,
                                              init_commands, device=device)
         port = device.nodePort or settings.SSH_PORT
@@ -259,10 +256,11 @@ def pty_connect(device, action, creds=None, display_banner=None,
     elif settings.TELNET_ENABLED:
         log.msg('[%s] SSH connection test FAILED, falling back to telnet' %
                 device)
-
-        if not creds and device.is_olt():
+        """
+        if not creds:
             creds = tacacsrc.get_device_password(device.nodeName)
-
+        """
+        
         factory = TriggerTelnetClientFactory(d,
                                              action,
                                              creds,
@@ -276,9 +274,6 @@ def pty_connect(device, action, creds=None, display_banner=None,
         return None
 
     reactor.connectTCP(device.nodeName, port, factory)
-    # TODO (jathan): There has to be another way than calling Tacacsrc
-    # construtor AGAIN...
-    print(('\nFetching credentials from %s' % tacacsrc.Tacacsrc().file_name))
 
     return d
 
@@ -787,7 +782,7 @@ class TriggerClientFactory(protocol.ClientFactory):
         self.creds = tacacsrc.validate_credentials(creds)
         self.results = []
         self.err = None
-
+        
         # Setup and run the initial commands
         if init_commands is None:
             init_commands = []  # We need this to be a list
@@ -795,6 +790,7 @@ class TriggerClientFactory(protocol.ClientFactory):
         self.init_commands = init_commands
         log.msg('INITIAL COMMANDS: %r' % self.init_commands, debug=True)
         self.initialized = False
+
 
     def clientConnectionFailed(self, connector, reason):
         """Do this when the connection fails."""
@@ -902,11 +898,10 @@ class TriggerSSHPtyClientFactory(TriggerClientFactory):
         self.command_interval = 0
         TriggerClientFactory.__init__(self, deferred, creds, init_commands)
 
+
 # ==================
 #  SSH Basics
 # ==================
-
-
 class TriggerSSHTransport(transport.SSHClientTransport):
     """
     SSH transport with Trigger's defaults.
@@ -920,7 +915,6 @@ class TriggerSSHTransport(transport.SSHClientTransport):
 
     def verifyHostKey(self, pubKey, fingerprint):
         """Verify host key, but don't actually verify. Awesome."""
-        #print(self.factory.creds)
         return defer.succeed(True)
         
     def connectionSecure(self):
@@ -1029,6 +1023,7 @@ class TriggerSSHUserAuth(SSHUserAuthClient):
         when configured within self.preferredOrder, does not work using default
         getPassword() method.
         """
+
         log.msg('Performing interactive authentication', debug=True)
         log.msg('Prompts: %r' % prompts, debug=True)
 
@@ -1055,8 +1050,7 @@ class TriggerSSHConnection(SSHConnection, object):
 
     def __init__(self, commands=None, *args, **kwargs):
         super(TriggerSSHConnection, self).__init__()
-        self.commands = bytes(commands)
-        #CHANGE remove bytes
+        self.commands = commands
         
     def serviceStarted(self):
         """Open the channel once we start."""
@@ -1844,9 +1838,10 @@ class TriggerTelnet(telnet.Telnet, telnet.ProtocolTransportMixin, TimeoutMixin):
     def __init__(self, timeout=settings.TELNET_TIMEOUT):
         self.protocol = telnet.TelnetProtocol()
         self.waiting_for = [
-            (b'Username: ', self.state_username),                   # Most
+            (b'Username: ', self.state_username),                  # Most
+            (b'\n\nUser Access Verification\n\nUsername:', self.state_username), #Adtran OLT
             (b'Username:', self.state_username),                   # Dell
-            (b'login: ', self.state_username),                      # EOS, JunOs
+            (b'login: ', self.state_username),                     # EOS, JunOs
             (b'Password: ', self.state_login_pw),
             (b'Password:', self.state_login_pw),
         ]
@@ -1873,8 +1868,6 @@ class TriggerTelnet(telnet.Telnet, telnet.ProtocolTransportMixin, TimeoutMixin):
 
         self.host = self.transport.connector.host
         log.msg('[%s] CONNECTOR HOST: %s' % (self.host, self.transport.connector.host))
-        #self.data += bytes.decode('utf-8')
-        #CHANGE
         self.data += bytes
 
         log.msg('[%s] STATE:  got data %r' % (self.host, self.data.decode('utf-8')))
@@ -1920,7 +1913,7 @@ class TriggerTelnet(telnet.Telnet, telnet.ProtocolTransportMixin, TimeoutMixin):
         """
 
         self.setTimeout(None)
-        data = self.data.lstrip(b'\n')
+        data = self.data.lstrip(b'enable\n')
         log.msg('[%s] state_logged_in, DATA: %r' % (self.host, data.decode('utf-8')))
         del self.waiting_for, self.data
 
@@ -1943,7 +1936,7 @@ class TriggerTelnet(telnet.Telnet, telnet.ProtocolTransportMixin, TimeoutMixin):
         TACACS by default. Use 'aaa authentication login privilege-mode'.
         Also, why no space after the Password: prompt here?
         """
-        
+
         log.msg("[%s] ENABLE: Sending command: enable" % self.host)
         self.write('enable\n'.encode())
         self.waiting_for = [
@@ -1954,6 +1947,7 @@ class TriggerTelnet(telnet.Telnet, telnet.ProtocolTransportMixin, TimeoutMixin):
 
     def state_login_pw(self):
         """Pass the login password from the factory or NetDevices"""
+        
         if self.factory.loginpw:
             pw = self.factory.loginpw
         else:
@@ -1965,7 +1959,7 @@ class TriggerTelnet(telnet.Telnet, telnet.ProtocolTransportMixin, TimeoutMixin):
         if pw is None:
             pw = b''
 
-        # log.msg('Sending password %s' % pw)
+        log.msg('Sending password %s' % pw.decode('utf-8'))
         self.write(pw + b'\n')
         self.waiting_for = [(b'>', self.state_enable),
                             (b'#', self.state_logged_in),

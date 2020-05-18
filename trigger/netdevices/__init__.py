@@ -329,12 +329,14 @@ class NetDevice(object):
         Set whether a device requires an async pty (see:
         `~trigger.twister.TriggerSSHAsyncPtyChannel`).
         """
+        
         RULES = (
             self.vendor in (
                 'a10', 'arista', 'aruba', 'cisco', 'cumulus', 'force10'
             ),
             self.is_brocade_vdx(),
         )
+        
         return any(RULES)
 
     def _set_delimiter(self):
