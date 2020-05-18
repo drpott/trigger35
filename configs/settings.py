@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+
 # This is a sample settings.py that varies slightly from the default. Please see docs/configuration.rst or
 # trigger/conf/global_settings.py for the complete list of default settings.
 
@@ -12,12 +13,13 @@ import socket
 #===============================
 
 # This is where Trigger should look for its files.
-PREFIX = '/home/dan/python27/trigger/configs'
+PREFIX = '/home/dan/python35/trigger35/configs'
 
 # Set to True to enable GPG Authentication
 # Set to False to use the old .tackf encryption method.
 # Should be False unless instructions/integration is ready for GPG
 USE_GPG_AUTH = False
+TACACSRC_GPG_USER = 'daniel'
 
 # This is used for old auth method. It sucks and needs to die.
 # TODO (jathan): This is deprecated. Remove all references to this and make GPG
@@ -31,7 +33,8 @@ TACACSRC_USE_PASSPHRASE = False
 
 # Use this passphrase to encrypt credentials.CHANGE THIS IN YOUR FILE BEFORE
 # USING THIS IN YOUR ENVIRONMENT.
-TACACSRC_PASSPHRASE = 'bacon is awesome, son.' # NYI
+#TACACSRC_PASSPHRASE = 'bacon is awesome, son.' # NYI
+TACACSRC_PASSPHRASE = 'abc123'
 
 # Default login realm to store user credentials (username, password) for
 # general use within the .tacacsrc
@@ -59,7 +62,7 @@ SUPPORTED_PLATFORMS = {
     'aruba': ['SWITCH'],                          # Aruba Wi-Fi controllers
     'avocent': ['CONSOLE'],
     'brocade': ['ROUTER', 'SWITCH'],
-    'cisco': ['ROUTER', 'SWITCH', 'FIREWALL'],
+    'cisco': ['ROUTER', 'SWITCH', 'FIREWALL', 'OLT'],
     'citrix': ['SWITCH'],                         # Assumed to be NetScalers
     'cumulus': ['SWITCH'],  # Any white-label hardware running Cumulus Linux
     'dell': ['SWITCH', 'OLT'],
@@ -170,7 +173,7 @@ TELNET_ENABLED = True
 SSH_PORT = 22
 
 # The preferred order in which SSH authentication methods are tried.
-SSH_AUTHENTICATION_ORDER = ['password', 'keyboard-interactive', 'publickey']
+SSH_AUTHENTICATION_ORDER = [b'password', b'keyboard-interactive', b'publickey']
 
 # Default port for Telnet
 TELNET_PORT = 23
@@ -180,7 +183,7 @@ TELNET_PORT = 23
 # bin/gong.
 SSH_PTY_DISABLED = {
     'dell': ['SWITCH'],    # Dell SSH is just straight up broken
-    'cisco': ['SWITCH'],
+    'cisco': ['SWITCH','OLT'],
     'netscreen': ['FIREWALL'],
 }
 
@@ -190,7 +193,7 @@ SSH_PTY_DISABLED = {
 SSH_ASYNC_DISABLED = {
     'dell': ['SWITCH', 'OLT'],    # Dell SSH is just straight up broken
     'foundry': ['SWITCH'], # Old Foundry switches only do SSHv1
-    'cisco': ['SWITCH'],
+    'cisco': ['SWITCH', 'OLT'],
 }
 
 # Vendors that basically just emulate Cisco's IOS and can be treated
@@ -209,7 +212,8 @@ IOSLIKE_VENDORS = (
 
 
 # Commands executed on devices by default.
-STARTUP_COMMANDS_DEFAULT = ['terminal length 0']
+#STARTUP_COMMANDS_DEFAULT = ['terminal length 0']
+STARTUP_COMMANDS_DEFAULT = [b'terminal length 0']
 
 # Startup commands are executed upon login to setup the terminal session for
 # automated execution. Typically these are just to disable pagination or other
@@ -227,11 +231,11 @@ STARTUP_COMMANDS_MAP = {
     'cisco_asa': ['terminal pager 0'],
     'citrix': ['set cli mode page off'],
     'cumulus': [],  # No startup commands for Cumulus by default!
-    'dell': ['terminal length 0'],
+    'dell': [b'terminal length 0'],
     'f5': ['modify cli preference pager disabled'],
     'force10': STARTUP_COMMANDS_DEFAULT,
     'foundry': ['skip-page-display'],
-    'juniper': ['set cli screen-length 0'],
+    'juniper': [b'set cli screen-length 0'],
     'mrv': ['no pause'],
     'netscreen': ['set console page 0'],
     'paloalto': ['set cli scripting-mode on', 'set cli pager off'],
@@ -244,15 +248,25 @@ STARTUP_COMMANDS_MAP = {
 # want to send along "yes"). These should be as specific as possible because we
 # want to make sure bad things don't happen.
 CONTINUE_PROMPTS = [
-    'continue?',
-    'proceed?',
-    '(y/n):',
-    '[y/n]:',
-    '[confirm]',
-    '[yes/no]: ',
-    'overwrite file [startup-config] ?[yes/press any key for no]....',
-    'Clear "show interface" counters on all interfaces [confirm]'
+    b'continue?',
+    b'proceed?',
+    b'(y/n):',
+    b'[y/n]:',
+    b'[confirm]',
+    b'[yes/no]: ',
+    b'overwrite file [startup-config] ?[yes/press any key for no]....',
+    b'Clear "show interface" counters on all interfaces [confirm]'
 ]
+#CONTINUE_PROMPTS = [
+#    'continue?',
+#    'proceed?',
+#    '(y/n):',
+#    '[y/n]:',
+#    '[confirm]',
+#    '[yes/no]: ',
+#    'overwrite file [startup-config] ?[yes/press any key for no]....',
+#    'Clear "show interface" counters on all interfaces [confirm]'
+#]
 
 # The file path where .gorc is expected to be found.
 GORC_FILE = '~/.gorc'
@@ -322,6 +336,7 @@ TEXTFSM_VENDOR_MAPPINGS = {
     "checkpoint": [ "gaia", "splat" ],
     "cisco": [ "ios", "nxos" ],
     "arista": [ "eos" ],
+    "fortinet": [ "fortios"],
 }
 
 # TextFSM Template Path. Commando will attempt to match a given show command with a template within this folder.
@@ -354,7 +369,7 @@ JUNIPER_FULL_COMMIT_FIELDS = {
 # Specially-defined, per-vendor prompt patterns. If a vendor isn't defined here,
 # try to use IOSLIKE_PROMPT_PAT or fallback to DEFAULT_PROMPT_PAT.
 PROMPT_PATTERNS = {
-    'aruba': r'\(\S+\)(?: \(\S+\))?\s?#$', # ArubaOS 6.1
+    'aruba': r'\(\S+\)(?: \(\S+\))?\s?#$', # ArubaOS 5.1
     #'aruba': r'\S+(?: \(\S+\))?\s?#\s$', # ArubaOS 6.2
     'avocent': r'\S+[#\$]|->\s?$',
     'citrix': r'\sDone\n$',

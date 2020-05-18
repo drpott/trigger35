@@ -1,0 +1,100 @@
+#!/usr/bin/env python
+import sys
+sys.path.append(r'/home/dan/python35/trigger35')
+
+from trigger.cmds import ReactorlessCommando
+from trigger.tacacsrc import get_device_password
+from twisted.internet import reactor, defer
+from twisted.python import log
+import sys
+
+#MAC='00:24:45' # ADTRAN switches
+#MAC='64:9f:f7' # KONE
+#MAC='00:90:e8' # MOXA switches
+#MAC='00:17:88:0b:6a:c6' # Philips lighting
+#MAC='18:e8:29'  # Blinds AP-ACj Pro
+#MAC='74:83:c2'  # Blinds AP-ACj Pro
+#MAC='b8:27:eb:5e:77:fb'  # Blinds controller
+#MAC='f4:0b:7f' #lighting controller vlan216
+#MAC='54:ec:2f' # ruckus wifi aps
+#MAC='1c:5f:2b' #smart lockers
+#MAC=00:15:65:ab:19:34 #VOIP commander
+#MAC='b6:0e'
+
+
+class findMacAddressCisco(ReactorlessCommando):
+    """Execute on a list of Cisco devices."""
+    vendors = ['cisco']
+    commands = [b'show mac address-table | include '+sys.argv[1].encode('utf-8')]
+
+class findMacAddressOLT(ReactorlessCommando):
+    """Execute on a list of OLT devices."""
+    vendors = ['cisco']
+    commands = [b'show mac address-table | include '+sys.argv[1].encode('utf-8')]
+    
+class findMacAddressJuniper(ReactorlessCommando):
+    """Execute on a list of Juniper devices."""
+    vendors = ['juniper']
+    commands = [b'show ethernet-switching table | match '+sys.argv[1].encode('utf-8')]
+
+    def to_juniper(self, dev, commands=None, extra=None):
+        return self.commands
+
+
+class findMacAddressFortinet(ReactorlessCommando):
+    """Execute on a list of Fortinet devices."""
+    vendors = ['fortinet']
+    commands = [b'get system arp | grep '+sys.argv[1].encode('utf-8')]
+    
+def stop_reactor(result):
+    if reactor.running:
+        log.msg('STOPPING REACTOR!')
+        reactor.stop()
+    return result
+
+
+def printResults(cmd):
+    for c_id, c_info in cmd.results.items():
+        for key in c_info:
+            print("DEV: {}   CMD: {}\n{}".format(c_id,
+                                                 key.decode('utf-8'),
+                                                 c_info[key].decode('utf-8')))
+
+
+if __name__ == '__main__':
+
+    cisco_dev_list = [
+        "C-CNS-M-001",         "C-CNS-M-002",         "C-CNS-M-003",
+        "C-CNS-B1-001",        "C-CNS-B1-002",        "C-CNS-B2-001",
+        "C-CNS-B2-002",        "C-CNS-G-001",         "C-CNS-G-002",
+        "C-CNS-G-003",         "C-CNS-G-004",         "C-CNS-L1-001",
+        "C-CNS-L1-003",        "C-CNS-L2-001",        "C-CNS-L2-002",
+        "C-CNS-L3-001",        "C-CNS-L3-002",        "C-CNS-L4-001",
+        "C-CNS-L4-002",        "C-CNS-L5-001",        "C-CNS-L5-002",
+        "C-CNS-L6-001",        "C-CNS-L6-002",        "C-CNS-L7-001",
+        "C-CNS-L7-002",        "C-CNS-L8-001",        "C-CNS-L8-002",
+        "C-CNS-L8-003",        "C-CNS-L8-004",        "C-CNS-L8-005",]
+    
+    juniper_dev_list = ['tor', 'tor2', 'tor1']
+    fortinet_dev_list = ['fortinet']
+    olt_dev_list = ['olt']
+
+    c1 = findMacAddressJuniper(juniper_dev_list, creds=get_device_password('tor'))
+    c2 = findMacAddressCisco(cisco_dev_list)
+    c3 = findMacAddressFortinet(fortinet_dev_list, creds=get_device_password('fortinet'))
+    c4 = findMacAddressOLT(olt_dev_list,  creds=get_device_password('olt'), )
+    
+    instances = [c1, c2, c3, c4]
+
+    # Once every task has returned a result, stop the reactor
+    deferreds = []
+    for i in instances:
+        deferreds.append(i.run())
+
+    d = defer.DeferredList(deferreds)
+
+    d.addBoth(stop_reactor)
+    reactor.run()
+
+    for i in instances:
+        printResults(i)

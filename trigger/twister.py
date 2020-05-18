@@ -125,7 +125,7 @@ def requires_enable(proto_obj, data):
         log.msg('[%s] Not IOS-like, setting enabled flag' % proto_obj.device)
         proto_obj.enabled = True
         return None
-    match = proto_obj.enable_prompt.search(data.decode('utf-8'))
+    match = proto_obj.enable_prompt.search(data)
     if match is not None:
         log.msg('[%s] Enable prompt detected: %r' % (proto_obj.device, match.group()))
     return match
@@ -1342,13 +1342,11 @@ class TriggerSSHChannelBase(channel.SSHChannel, TimeoutMixin):
                     self.device)
             if self.startup_commands:
                 next_init = self.startup_commands.pop(0)
-                log.msg('[%s] Sending initialize command: %r' % (self.device,
-                                                                 next_init))
+                log.msg('[%s] Sending initialize command: %r' % (self.device, next_init))
                 self.write(next_init.strip() + self.device.delimiter)
                 return None
             else:
-                log.msg('[%s] Successfully initialized for command execution' %
-                        self.device)
+                log.msg('[%s] Successfully initialized for command execution' % self.device)
                 self.initialized = True
                 self.enabled = True  # Disable further enable checks.
 
