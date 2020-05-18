@@ -6,9 +6,9 @@ network automation using trigger for me
  - fixed twister.py
  - fixed gong script (telnet and ssh works now)
  - fixed netdevices
+ - fixed commands with commando
 
 ## work to do
- - need to fix send commands with commando
  - other shit most likely
 
 original project:
