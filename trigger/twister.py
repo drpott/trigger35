@@ -35,12 +35,10 @@ __author__ = 'Jathan McCollum, Eileen Tschetter, Mark Thomas, Michael Shields'
 __maintainer__ = 'Jathan McCollum'
 __email__ = 'jathan@gmail.com'
 __copyright__ = 'Copyright 2006-2013, AOL Inc.; 2013 Salesforce.com'
-__version__ = '1.5.8'
+__version__ = '2.0'
 
 
 # Exports
-# TODO (jathan): Setting this prevents everything from showing up in the Sphinx
-# docs; so let's make sure we account for that ;)
 # __all__ = ('connect', 'execute', 'stop_reactor')
 
 
@@ -61,10 +59,10 @@ def has_juniper_error(s):
     """Test whether a string seems to contain an Juniper error."""
 
     tests = (
-        'unknown command.' in s,
-        'syntax error, ' in s,
-        'invalid value.' in s,
-        'missing argument.' in s,
+        b'unknown command.' in s,
+        b'syntax error, ' in s,
+        b'invalid value.' in s,
+        b'missing argument.' in s,
     )
     return any(tests)
 
@@ -72,11 +70,11 @@ def has_juniper_error(s):
 def has_ioslike_error(s):
     """Test whether a string seems to contain an IOS-like error."""
     tests = (
-        s.startswith('%'),                  # Cisco, Arista
-        '\n%' in s,                         # A10, Aruba, Foundry
-        'syntax error: ' in s.lower(),      # Brocade VDX, F5 BIGIP
-        s.startswith('Invalid input -> '),  # Brocade MLX
-        s.endswith('Syntax Error'),         # MRV
+        s.startswith(b'%'),                  # Cisco, Arista
+        b'\n%' in s,                         # A10, Aruba, Foundry
+        b'syntax error: ' in s.lower(),      # Brocade VDX, F5 BIGIP
+        s.startswith(b'Invalid input -> '),  # Brocade MLX
+        s.endswith(b'Syntax Error'),         # MRV
     )
     return any(tests)
 
@@ -122,21 +120,14 @@ def requires_enable(proto_obj, data):
     :param data:
         The channel data to check for an enable prompt
     """
-    
-    if not proto_obj.device.is_ioslike():
-        if proto_obj.device.vendor == 'checkpoint':
-            match = proto_obj.enable_prompt.search(data)
-            return match
-        else:
-            log.msg('[%s] Not IOS-like, setting enabled flag' % proto_obj.device)
-            proto_obj.enabled = True
-            return None
-        
-    match = proto_obj.enable_prompt.search(data)
 
+    if not proto_obj.device.is_ioslike():
+        log.msg('[%s] Not IOS-like, setting enabled flag' % proto_obj.device)
+        proto_obj.enabled = True
+        return None
+    match = proto_obj.enable_prompt.search(data.decode('utf-8'))
     if match is not None:
-        log.msg('[%s] Enable prompt detected: %r' % (proto_obj.device,
-                                                     match.group()))
+        log.msg('[%s] Enable prompt detected: %r' % (proto_obj.device, match.group()))
     return match
 
 
@@ -152,30 +143,24 @@ def send_enable(proto_obj, disconnect_on_fail=True):
     """
 
     log.msg('[%s] Enable required, sending enable commands' % proto_obj.device)
-    # print('sending enable')
     # Get enable password from env. or device object
     device_pw = getattr(proto_obj.device, 'enablePW', None)
-    enable_pw = os.getenv('TRIGGER_ENABLEPW') or device_pw
+    enable_pw = bytes(os.getenv('TRIGGER_ENABLEPW') or device_pw, 'utf-8')
 
     if enable_pw is not None:
         log.msg('[%s] Enable password detected, sending...' % proto_obj.device)
-        proto_obj.data = ''  # Zero out the buffer before sending the password
-        if proto_obj.device.vendor == 'checkpoint':
-            proto_obj.write('expert\r')
-        else:
-            proto_obj.write('enable' + proto_obj.device.delimiter)
+        proto_obj.data = b''  # Zero out the buffer before sending the password
+        proto_obj.write(b'enable' + proto_obj.device.delimiter)
 
         # In low latency environments (< 1ms), we might send the password
         # before the "Password:" prommpt is displayed. Here we wait a split
         # second for the password prompt to appear before sending the
         # password. See: https://github.com/trigger/trigger/issues/238
         from twisted.internet import reactor
-        reactor.callLater(0.5, proto_obj.write, enable_pw + 
-                          proto_obj.device.delimiter)
+        reactor.callLater(0.5, proto_obj.write, enable_pw + proto_obj.device.delimiter)
         proto_obj.enabled = True
     else:
-        log.msg('[%s] Enable password not found, not enabling.' %
-                proto_obj.device)
+        log.msg('[%s] Enable password not found, not enabling.' % proto_obj.device)
         proto_obj.factory.err = exceptions.EnablePasswordFailure(
             'Enable password not set. See documentation on '
             'settings.TRIGGER_ENABLEPW for help.'
@@ -192,11 +177,10 @@ def stop_reactor():
         log.msg('Stopping reactor')
         reactor.stop()
 
+
 # ==================
 #  PTY functions
 # ==================
-
-
 def pty_connect(device, action, creds=None, display_banner=None,
                 ping_test=False, init_commands=None):
     """
@@ -251,7 +235,6 @@ def pty_connect(device, action, creds=None, display_banner=None,
                                              init_commands, device=device)
         port = device.nodePort or settings.SSH_PORT
         log.msg('Trying SSH to %s:%s' % (device, port), debug=True)
-
     # or Telnet?
     elif settings.TELNET_ENABLED:
         log.msg('[%s] SSH connection test FAILED, falling back to telnet' %
@@ -367,11 +350,10 @@ def connect(device, init_commands=None, output_logger=None, login_errback=None,
 
     return 0  # Good exit code
 
+
 # ==================
 #  Execute Factory functions
 # ==================
-
-
 def _choose_execute(device, force_cli=False):
     """
     Return the appropriate execute_ function for the given ``device`` based on
@@ -387,8 +369,6 @@ def _choose_execute(device, force_cli=False):
         _execute = execute_netscaler
     elif device.is_netscreen():
         _execute = execute_netscreen
-    elif device.vendor == 'checkpoint':
-        _execute = execute_checkpoint
     elif device.vendor == 'fortinet':
         _execute = execute_async_pty_ssh
     elif device.vendor == 'juniper':
@@ -399,7 +379,6 @@ def _choose_execute(device, force_cli=False):
     elif device.is_pica8():
         _execute = execute_pica8
     else:
-        print("THIS IS NOT FORTINET")
         _execute = execute_async_pty_ssh
 
     return _execute
@@ -647,8 +626,7 @@ def execute_ioslike_telnet(device, commands, creds=None, incremental=None,
     assert device.is_ioslike()
 
     d = defer.Deferred()
-    action = IoslikeSendExpect(device, commands, incremental, with_errors,
-                               timeout, command_interval)
+    action = IoslikeSendExpect(device, commands, incremental, with_errors, timeout, command_interval)
     factory = TriggerTelnetClientFactory(d, action, creds, loginpw, enablepw)
 
     port = device.nodePort or settings.TELNET_PORT
@@ -804,7 +782,6 @@ class TriggerClientFactory(protocol.ClientFactory):
         log.msg('Client connection lost. Reason: %s' % reason)
         if self.err:
             log.msg('Got err: %r' % self.err)
-            # log.err(self.err)
             self.d.errback(self.err)
         else:
             log.msg('Got results: %r' % self.results)
@@ -1041,7 +1018,7 @@ class TriggerSSHUserAuth(SSHUserAuthClient):
         return defer.succeed(response)
 
 
-class TriggerSSHConnection(SSHConnection, object):
+class TriggerSSHConnection(SSHConnection):
     """
     Used to manage, you know, an SSH connection.
 
@@ -1064,8 +1041,9 @@ class TriggerSSHConnection(SSHConnection, object):
 
     def _channelOpener(self):
         """This is what calls ``self.channelOpen()``"""
+        
         # Default behavior: Single channel/conn
-        self.openChannel(self.channel_class(conn=self))
+        self.openChannel(self.channel_class(conn=self)) #Async Pty channel class
 
     def channelClosed(self, channel):
         """
@@ -1231,7 +1209,7 @@ class TriggerSSHPtyChannel(channel.SSHChannel):
 # ==================
 #  SSH Channels
 # ==================
-class TriggerSSHChannelBase(channel.SSHChannel, TimeoutMixin, object):
+class TriggerSSHChannelBase(channel.SSHChannel, TimeoutMixin):
     """
     Base class for SSH channels.
 
@@ -1262,12 +1240,11 @@ class TriggerSSHChannelBase(channel.SSHChannel, TimeoutMixin, object):
         self.setTimeout(self.factory.timeout)
         self.device = self.factory.device
         log.msg('[%s] COMMANDS: %r' % (self.device, self.factory.commands))
-        self.data = ''
+        self.data = b''
         self.initialized = self.factory.initialized
         self.startup_commands = copy.copy(self.device.startup_commands)
 
-        log.msg('[%s] My startup commands: %r' % (self.device,
-                                                  self.startup_commands))
+        log.msg('[%s] My startup commands: %r' % (self.device, self.startup_commands))
 
         # For IOS-like devices that require 'enable'
         self.enable_prompt = re.compile(settings.IOSLIKE_ENABLE_PAT)
@@ -1275,6 +1252,7 @@ class TriggerSSHChannelBase(channel.SSHChannel, TimeoutMixin, object):
 
     def channelOpen(self, data):
         """Do this when the channel opens."""
+        
         self._setup_channelOpen()
         d = self.conn.sendRequest(self, 'shell', '', wantReply=True)
         d.addCallback(self._gotResponse)
@@ -1298,24 +1276,23 @@ class TriggerSSHChannelBase(channel.SSHChannel, TimeoutMixin, object):
 
     def dataReceived(self, bytes):
         """Do this when we receive data."""
-        # Append to the data buffer
 
+        # Append to the data buffer
         self.data += bytes
-        log.msg('[%s] BYTES: %r' % (self.device, bytes))
+        log.msg('[%s] BYTES: %r' % (self.device, bytes.decode('utf-8')))
         # log.msg('BYTES: (left: %r, max: %r, bytes: %r, data: %r)' %
         #         (self.remoteWindowLeft, self.localMaxPacket, len(bytes),
         #          len(self.data)))
 
         # Keep going til you get a prompt match
 
-        m = self.prompt.search(self.data)
+        m = self.prompt.search(self.data.decode('utf-8'))
 
         if not m:
             # Do we need to send an enable password?
             if not self.enabled and requires_enable(self, self.data):
                 send_enable(self)
                 return None
-
             # Check for confirmation prompts
             # If the prompt confirms set the index to the matched bytes
             if is_awaiting_confirmation(self.data):
@@ -1329,11 +1306,10 @@ class TriggerSSHChannelBase(channel.SSHChannel, TimeoutMixin, object):
             log.msg('[%s] STATE: buffer %r' % (self.device, self.data))
             log.msg('[%s] STATE: prompt %r' % (self.device, m.group()))
             prompt_idx = m.start()
-            
 
         # Strip the prompt from the match result
         result = self.data[:prompt_idx]  # Cut the prompt out
-        result = result[result.find('\n')+1:]  # Keep all from first newline
+        result = result[result.find(b'\n')+1:]  # Keep all from first newline
         log.msg('[%s] STATE: result %r' % (self.device, result))
 
         # Only keep the results once we've sent any startup_commands
@@ -1354,7 +1330,7 @@ class TriggerSSHChannelBase(channel.SSHChannel, TimeoutMixin, object):
             if self.command_interval:
                 log.msg('[%s] Waiting %s seconds before sending next command' %
                         (self.device, self.command_interval))
-            self.data = ''  # Flush the buffer before next command
+            self.data = b''  # Flush the buffer before next command
             reactor.callLater(self.command_interval, self._send_next)
 
     def _send_next(self):
@@ -1382,7 +1358,6 @@ class TriggerSSHChannelBase(channel.SSHChannel, TimeoutMixin, object):
 
         try:
             next_command = next(self.commanditer)
-            #print("NEXT COMMAND: "+next_command)
 
         except StopIteration:
             log.msg('[%s] CHANNEL: out of commands, closing connection...' %
@@ -1394,8 +1369,7 @@ class TriggerSSHChannelBase(channel.SSHChannel, TimeoutMixin, object):
             self.results.append(None)
             self._send_next()
         else:
-            log.msg('[%s] Sending SSH command %r' % (self.device,
-                                                     next_command))
+            log.msg('[%s] Sending SSH command %r' % (self.device, next_command))
             self.write(next_command + self.device.delimiter)
 
     def loseConnection(self):
@@ -1447,99 +1421,11 @@ class TriggerSSHAsyncPtyChannel(TriggerSSHChannelBase):
         self._setup_channelOpen()
 
         # Request a pty even tho we are not actually using one.
-        pr = session.packRequest_pty_req(
-            settings.TERM_TYPE, (80, 24, 0, 0), ''
-        )
+        pr = session.packRequest_pty_req(settings.TERM_TYPE, (80, 24, 0, 0), '')
         self.conn.sendRequest(self, 'pty-req', pr)
-        d = self.conn.sendRequest(self, 'shell', '', wantReply=True)
+        d = self.conn.sendRequest(self, 'shell', b'', wantReply=True)
         d.addCallback(self._gotResponse)
         d.addErrback(self._ebShellOpen)
-
-
-def send_expert(proto_obj, disconnect_on_fail=True):
-    """
-    Send 'enable' and enable password to device.
-
-    :param proto_obj:
-        A Protocol object such as an SSHChannel
-
-    :param disconnect_on_fail:
-        If set, will forcefully disconnect on enable password failure
-    """
-
-    # Get enable password from env. or device object
-    device_pw = getattr(proto_obj.device, 'enablePW', None)
-    enable_pw = os.getenv('TRIGGER_ENABLEPW') or device_pw
-
-    if enable_pw is not None:
-        proto_obj.data = ''  # Zero out the buffer before sending the password
-        proto_obj.write("expert\r")
-        # In low latency environments (< 1ms), we might send the password
-        # before the "Password:" prommpt is displayed. Here we wait a split
-        # second for the password prompt to appear before sending the
-        # password. See: https://github.com/trigger/trigger/issues/238
-        # from twisted.internet import reactor
-        # reactor.callLater(0.5, proto_obj.write, enable_pw + '\r')
-        # proto_obj.enabled = True
-    else:
-        proto_obj.factory.err = exceptions.EnablePasswordFailure(
-            'Enable password not set. See documentation on '
-            'settings.TRIGGER_ENABLEPW for help.'
-        )
-        if disconnect_on_fail:
-            proto_obj.loseConnection()
-
-    
-class TriggerSSHCPChannel(TriggerSSHAsyncPtyChannel):
-    """
-    An SSH channel to interact with checkpoint GAIA
-
-    """
-
-    pwd = re.compile('Enter expert password:')
-    
-    def channelOpen(self, data):
-        self._setup_channelOpen()
-        self.prompt = re.compile(settings.CPGAIA_PROMPT_PAT)
-        self.enable_prompt = re.compile(settings.CPGAIA_PROMPT_PAT)
-        # (settings.IOSLIKE_ENABLE_PAT)
-
-        # Request a pty even tho we are not actually using one.
-        pr = session.packRequest_pty_req(
-            settings.TERM_TYPE, (100, 100, 0, 0), ''
-        )
-        self.conn.sendRequest(self, 'pty-req', pr)
-        d = self.conn.sendRequest(self, 'shell', '', wantReply=True)
-        d.addCallback(self._gotResponse)
-        d.addErrback(self._ebShellOpen)
-        if not self.enabled:
-            send_expert(self)
-
-    def dataReceived(self, bytes):
-        """Do this when we receive data."""
-
-        # Append to the data buffer
-        self.data += bytes
-
-        m = self.prompt.search(self.data)
-        p = self.pwd.search(self.data)
-
-        if p and not self.enabled:
-            expert_pw = getattr(self.device, 'enablePW', None)
-            self.write(expert_pw + "\r")
-            self.enabled = True
-        elif not m:
-            # return until we get a prompt on the line
-            return None
-        else:
-            # we got the prompt
-            prompt_idx = m.start()
-            result = self.data[:prompt_idx]  # Cut the prompt out
-            result = result[result.find('\n')+1:]  # Keep all from first newline
-            self.results.append(result)
-
-        self.data = ''  # Flush the buffer before next command
-        reactor.callLater(0.3, self._send_next)
 
     
 class TriggerSSHCommandChannel(TriggerSSHChannelBase):
@@ -2031,7 +1917,7 @@ class IoslikeSendExpect(protocol.Protocol, TimeoutMixin):
         self.setTimeout(self.timeout)
         self.results = self.factory.results = []
         self.data = b''
-        log.msg('[%s] connectionMade, data: %r' % (self.device, self.data))
+        log.msg('[%s] connectionMade, data: %r' % (self.device, self.data.decode('utf-8')))
 
         # Don't call _send_next, since we expect to see a prompt, which
         # will kick off initialization.
@@ -2040,12 +1926,12 @@ class IoslikeSendExpect(protocol.Protocol, TimeoutMixin):
         """Do this when we get data."""
         
         log.msg('[%s] BYTES: %r' % (self.device, bytes))
-        
+
         self.data += bytes
         # See if the prompt matches, and if it doesn't, see if it is waiting
         # for more input (like a [y/n]) prompt), and continue, otherwise return
         # None
-        
+
         m = self.prompt.search(self.data.decode('utf-8'))
         if not m:
             # If the prompt confirms set the index to the matched bytes,
@@ -2066,7 +1952,8 @@ class IoslikeSendExpect(protocol.Protocol, TimeoutMixin):
         # connectionMade() returns an AlreadyDisabled error.  What's up?
         
         log.msg('[%s] result BEFORE: %r' % (self.device, result))
-        result = result[result.find('\n')+1:]
+
+        result = result[result.find(b'\n')+1:]
         log.msg('[%s] result AFTER: %r' % (self.device, result))
 
         if self.initialized:
@@ -2081,19 +1968,18 @@ class IoslikeSendExpect(protocol.Protocol, TimeoutMixin):
                 log.msg('[%s] Waiting %s seconds before sending next command' %
                         (self.device, self.command_interval))
             reactor.callLater(self.command_interval, self._send_next)
-
+        
     def _send_next(self):
         """Send the next command in the stack."""
-        self.data = ''
+        
+        self.data = b''
         self.resetTimeout()
 
         if not self.initialized:
-            log.msg('[%s] Not initialized, sending startup commands' %
-                    self.device)
+            log.msg('[%s] Not initialized, sending startup commands' % self.device)
             if self.startup_commands:
                 next_init = self.startup_commands.pop(0)
-                log.msg('[%s] Sending initialize command: %r' % (self.device,
-                                                                 next_init))
+                log.msg('[%s] Sending initialize command: %r' % (self.device, next_init))
                 self.write(next_init.strip() + self.device.delimiter)
                 return None
             else:
@@ -2106,7 +1992,6 @@ class IoslikeSendExpect(protocol.Protocol, TimeoutMixin):
 
         try:
             next_command = next(self.commanditer)
-            # print("COMMAND: "+next_command)
         except StopIteration:
             log.msg('[%s] No more commands to send, disconnecting...' %
                     self.device)
@@ -2122,6 +2007,7 @@ class IoslikeSendExpect(protocol.Protocol, TimeoutMixin):
 
     def timeoutConnection(self):
         """Do this when we timeout."""
+        
         log.msg('[%s] Timed out while sending commands' % self.device)
         self.factory.err = exceptions.CommandTimeout('Timed out while '
                                                      'sending commands')

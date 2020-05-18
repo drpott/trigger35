@@ -525,6 +525,7 @@ class Commando(object):
         :param results:
             The results to store. Anything you want really.
         """
+        
         devname = str(device)
         log.msg("Appending results for %r: %r" % (devname, results))
         if self.parsed_results.get(devname):
@@ -685,11 +686,13 @@ class ReactorlessCommando(Commando):
     """
     def _start(self):
         """Initializes ``all_done`` instead of starting the reactor"""
+        
         log.msg("._start() called")
         self.all_done = False
 
     def _stop(self):
         """Sets ``all_done`` to True instead of stopping the reactor"""
+        
         log.msg("._stop() called")
         self.all_done = True
 
@@ -697,6 +700,7 @@ class ReactorlessCommando(Commando):
         """
         We've overloaded the run method to return a Deferred task object.
         """
+        
         log.msg(".run() called")
 
         # This is the default behavior

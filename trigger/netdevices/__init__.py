@@ -343,9 +343,9 @@ class NetDevice(object):
         """
         Set the delimiter to use for line-endings.
         """
-        default = '\n'
+        default = b'\n'
         delimiter_map = {
-            'force10': '\r\n',
+            'force10': b'\r\n',
         }
         delimiter = delimiter_map.get(self.vendor.name, default)
         return delimiter
@@ -497,6 +497,7 @@ class NetDevice(object):
         self.factories["base"] = factory
 
         # FIXME(jathan): prompt_pattern could move back to protocol?
+        
         prompt = re.compile(settings.IOSLIKE_PROMPT_PAT)
         proto = endpoint.connect(factory, prompt_pattern=prompt)
         self._proto = proto  # Track this for later, too.
@@ -815,6 +816,7 @@ class NetDevice(object):
 
         :param method: One of ('pty', 'async')
         """
+        
         METHOD_MAP = {
             'pty': settings.SSH_PTY_DISABLED,
             'async': settings.SSH_ASYNC_DISABLED,
