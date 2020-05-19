@@ -17,17 +17,17 @@ network automation using trigger for me
 
  - Environment:
    - Linux
-   -- python 3.x
-   -- gpg2
+   - python 3.x
+   - gpg2
 
  - Python 3.x modules:
-   -- gtextfsm (manual installation, broken via pip install)
-   -- twisted 20.3
-   -- crochet
-   -- IPy
-   -- pyasn1
-   -- SimpleParse
-   -- zope.interface
+   - gtextfsm (manual installation, broken via pip install)
+   - twisted 20.3
+   - crochet
+   - IPy
+   - pyasn1
+   - SimpleParse
+   - zope.interface
 
 original project:
 https://github.com/trigger/trigger
