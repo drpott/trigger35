@@ -231,11 +231,6 @@ class Tacacsrc(object):
         self.file_abs_path = os.path.join(self.user_home, self.file_name)
         log.msg("Got username: %r" % self.username, debug=True)
 
-        # Set the .tacacsrc file location
-        # if self.file_name is None:
-        #    self.file_name = settings.TACACSRC
-        #    self.file_name += '.gpg'
-
         # Check if the file exists
         if not os.path.exists(self.file_abs_path):
             print('%s not found, generating a new one!' % os.path.join(self.user_home, self.file_name))
