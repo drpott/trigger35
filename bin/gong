@@ -22,6 +22,7 @@ import sys
 sys.path.append(r'/home/dan/python35/trigger35')
 from twisted.python import log
 from trigger.netdevices import device_match
+from trigger.utils.cli import print_severed_head
 
 
 # Put this here until the default changes to not load ACLs from redis.
@@ -60,6 +61,7 @@ def main():
     print(dev.comment)
 
     # Connect to the device... and make sure to capture its exit code
+    print_severed_head()
     retval = dev.connect()
 
     print('\n') # Return cursor to beginning of line

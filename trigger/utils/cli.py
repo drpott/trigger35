@@ -60,6 +60,7 @@ def yesno(prompt, default=False, autoyes=False):
         >>> yesno('Blow up the moon?', autoyes=True)
         True
     """
+    
     if autoyes:
         return True
 
@@ -135,9 +136,9 @@ def print_severed_head():
         ;    ;                 `:::. `:::OOO:::::::.`OO' ;;;''
    :       ;                     `.      "``::::::''    .'
       ;                           `.   \_              /
-    ;       ;                       +:   ~~--  `:'  -';    ACL LOADS FAILED
+    ;       ;                       +:   ~~--  `:'  -';
                                      `:         : .::/
-        ;                            ;;+_  :::. :..;;;         YOU LOSE
+        ;                            ;;+_  :::. :..;;;
                                      ;;;;;;,;;;;;;;;,;
 
 """)
@@ -165,6 +166,7 @@ def pretty_time(t):
     >>> print pretty_time(t)
     tomorrow 02:13 PDT
     """
+    
     from trigger.conf import settings
     localzone = timezone(os.environ.get('TZ', settings.BOUNCE_DEFAULT_TZ))
     t = t.astimezone(localzone)
@@ -203,6 +205,7 @@ def min_sec(secs):
     >>> min_sec(finish - start)
     '0:11'
     """
+    
     secs = int(secs)
     return '%d:%02d' % (secs / 60, secs % 60)
 
@@ -222,26 +225,19 @@ def setup_tty_for_pty(func):
 
     try:
         # Enter raw mode on the local tty.
-        #tty.setraw(stdin_fileno)
+        tty.setraw(stdin_fileno)
         tty.setcbreak(stdin_fileno)
-
+        
         raw_ta = tty.tcgetattr(stdin_fileno)
+
         raw_ta[tty.LFLAG] |= tty.ISIG
         raw_ta[tty.OFLAG] |= tty.OPOST | tty.ONLCR
 
         # Pass ^C through so we can abort traceroute, etc.
-        raw_ta[tty.CC][tty.VINTR] = '\x18'  # ^X is the new ^C
-
+        raw_ta[tty.CC][tty.VINTR] = b'\x18'  # ^X is the new ^C
         # Ctrl-Z is used by a lot of vendors to exit config mode
         raw_ta[tty.CC][tty.VSUSP] = 0       # disable ^Z
-
-        """
-        for i in range(len(raw_ta[6])):
-            if type(raw_ta[6][i]) == bytes:
-                raw_ta[6][i] = raw_ta[6][i].hex()
-        """
-
-        #tty.tcsetattr(stdin_fileno, tty.TCSANOW, raw_ta)
+        tty.tcsetattr(stdin_fileno, tty.TCSANOW, raw_ta)
 
         # Execute our callable here
         func()
