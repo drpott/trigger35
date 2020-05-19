@@ -18,7 +18,8 @@ network automation using trigger for me
  - Environment:
    - Linux
    - python 3.x
-   - gpg2
+   - gpg2 (gpg2 --gen-key)
+   - gnupg-agent
 
  - Python 3.x modules:
    - gtextfsm (manual installation, broken via pip install)
