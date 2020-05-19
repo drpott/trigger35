@@ -16,7 +16,7 @@ network automation using trigger for me
 ## requirements
 
  - Environment:
-   -- Linux
+   - Linux
    -- python 3.x
    -- gpg2
 
