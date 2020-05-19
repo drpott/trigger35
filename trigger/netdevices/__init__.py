@@ -46,9 +46,6 @@ from crochet import setup, run_in_reactor, wait_for
 
 from . import loader
 
-settings.WITH_ACLS = False
-
-
 # Constants
 JUNIPER_COMMIT = ET.Element('commit-configuration')
 JUNIPER_COMMIT_FULL = copy.copy(JUNIPER_COMMIT)
@@ -202,7 +199,7 @@ class NetDevice():
         # Administrivia
         self.enablePW = None
         self.owningTeam = None
-        self.comments = None
+        self.comment = None
         self.ipAddr = None
         
         # Location
@@ -228,14 +225,6 @@ class NetDevice():
         if self.deviceType is None:
             self._populate_deviceType()
 
-        # ACLs (defaults to empty sets)
-        """
-        self.explicit_acls = self.implicit_acls = self.acls = self.bulk_acls = set()
-        if with_acls:
-            log.msg('[%s] Populating ACLs' % self.nodeName)
-            self._populate_acls(aclsdb=with_acls)
-        """
-        
         # Bind the correct execute/connect methods based on deviceType
         self._bind_dynamic_methods()
 
@@ -267,6 +256,7 @@ class NetDevice():
 
     def _cleanup_attributes(self):
         """Perform various cleanup actions. Abstracted for customization."""
+        
         # Lowercase the nodeName for completeness.
         if self.nodeName is not None:
             self.nodeName = self.nodeName.lower()
@@ -276,19 +266,11 @@ class NetDevice():
 
         # Make sure the password is bytes not unicode
         if self.enablePW is not None:
-            self.enablePW = str(self.enablePW)
+            self.enablePW = self.enablePW
 
         # Cleanup whitespace from owning team
         if self.owningTeam is not None:
             self.owningTeam = self.owningTeam.strip()
-
-        # Map deviceStatus to adminStatus when data source is RANCID
-        if hasattr(self, 'deviceStatus'):
-            STATUS_MAP = {
-                'up': 'PRODUCTION',
-                'down': 'NON-PRODUCTION',
-            }
-            self.adminStatus = STATUS_MAP.get(self.deviceStatus, STATUS_MAP['up'])
 
     def _set_node_port(self):
         """Set the freakin' TCP port"""
@@ -313,8 +295,7 @@ class NetDevice():
 
     def _populate_deviceType(self):
         """Try to make a guess what the device type is"""
-        self.deviceType = settings.DEFAULT_TYPES.get(self.vendor.name,
-                                                     settings.FALLBACK_TYPE)
+        self.deviceType = settings.DEFAULT_TYPES.get(self.vendor.name, settings.FALLBACK_TYPE)
 
     def _set_requires_async_pty(self):
         """
@@ -432,21 +413,6 @@ class NetDevice():
         self.execute = twister.execute.__get__(self, self.__class__)
         self.connect = twister.connect.__get__(self, self.__class__)
 
-    def _populate_acls(self, aclsdb=None):
-        """
-        Populate the associated ACLs for this device.
-
-        :param aclsdb:
-            An `~trigger.acl.db.AclsDB` object.
-        """
-        if not aclsdb:
-            return None
-
-        acls_dict = aclsdb.get_acl_dict(self)
-        self.explicit_acls = acls_dict['explicit']
-        self.implicit_acls = acls_dict['implicit']
-        self.acls = acls_dict['all']
-
     def __str__(self):
         return self.nodeName
 
@@ -460,10 +426,6 @@ class NetDevice():
             return -1
         else:
             return 0
-
-    @property
-    def bounce(self):
-        return changemgmt.bounce(self)
 
     @property
     def shortName(self):
@@ -484,6 +446,7 @@ class NetDevice():
 
     def _get_endpoint(self, *args):
         """Private method used for generating an endpoint for `~trigger.netdevices.NetDevice`."""
+        
         from trigger.twister2 import generate_endpoint, TriggerEndpointClientFactory, IoslikeSendExpect
         endpoint = generate_endpoint(self).wait()
 
@@ -509,6 +472,7 @@ class NetDevice():
             >>> dev.open()
 
         """
+        
         def inject_net_device_into_protocol(proto):
             """Now we're only injecting connection for use later."""
             self._conn = proto.transport.conn
@@ -528,6 +492,7 @@ class NetDevice():
 
     def close(self):
         """Close an open `~trigger.netdevices.NetDevice` object."""
+        
         def disconnect(proto):
             proto.transport.loseConnection()
             return proto
@@ -572,6 +537,7 @@ class NetDevice():
         >>> dev.run_channeled_commands(['show ip int brief', 'show version'], on_error=lambda x: handle(x))
 
         """
+        
         from trigger.twister2 import TriggerSSHShellClientEndpointBase, IoslikeSendExpect, TriggerEndpointClientFactory
 
         if on_error is None:
@@ -646,36 +612,6 @@ class NetDevice():
     def connected(self):
         return self._connected
 
-    def allowable(self, action, when=None):
-        """
-        Return whether it's okay to perform the specified ``action``.
-
-        False means a bounce window conflict. For now ``'load-acl'`` is the
-        only valid action and moratorium status is not checked.
-
-        :param action:
-            The action to check.
-
-        :param when:
-            A datetime object.
-        """
-        assert action == 'load-acl'
-        return self.bounce.status(when) == changemgmt.BounceStatus('green')
-
-    def next_ok(self, action, when=None):
-        """
-        Return the next time at or after the specified time (default now)
-        that it will be ok to perform the specified action.
-
-        :param action:
-            The action to check.
-
-        :param when:
-            A datetime object.
-        """
-        assert action == 'load-acl'
-        return self.bounce.next_ok(changemgmt.BounceStatus('green'), when)
-
     def is_router(self):
         """Am I a router?"""
         return self.deviceType == 'ROUTER'
@@ -705,6 +641,7 @@ class NetDevice():
 
     def is_netscreen(self):
         """Am I a NetScreen running ScreenOS?"""
+        
         # Are we even a firewall?
         if not self.is_firewall():
             return False
@@ -769,6 +706,7 @@ class NetDevice():
         assume considering ASA (was PIX) are Cisco's flagship(if not only)
         Firewalls.
         """
+        
         if hasattr(self, '_is_cisco_asa'):
             return self._is_cisco_asa
 
@@ -787,6 +725,7 @@ class NetDevice():
         """
         Am I a Cisco Nexus device?
         """
+        
         words = (self.make, self.model)
         patterns = ('n.k', 'nexus')  # Patterns to match
         pairs = itertools.product(patterns, words)
@@ -836,6 +775,7 @@ class NetDevice():
 
     def dump(self):
         """Prints details for a device."""
+        
         dev = self
         print("""
         Hostname:         {}
@@ -850,7 +790,6 @@ class NetDevice():
         Serial:           {}
         IP Address:       {}
         Commnents:        {}
-
 """.format(dev.nodeName,
            dev.owningTeam,
            dev.vendor.title, dev.manufacturer,
@@ -875,6 +814,7 @@ class Vendor(object):
     This exposes a normalized name that can be used in the event of a
     multi-word canonical name.
     """
+    
     def __init__(self, manufacturer=None):
         """
         :param manufacturer:
@@ -909,6 +849,7 @@ class Vendor(object):
         Map the vendor name to the appropriate ``prompt_pattern`` defined in
         :setting:`PROMPT_PATTERNS`.
         """
+        
         if prompt_patterns is None:
             prompt_patterns = settings.PROMPT_PATTERNS
 
@@ -977,6 +918,7 @@ class NetDevices(DictMixin):
 
     You may override this by passing ``production_only=False``.
     """
+    
     _Singleton = None
 
     class _actual(object):
@@ -1150,6 +1092,7 @@ class NetDevices(DictMixin):
 
             :returns: List of NetDevice objects
             """
+            
             skip_loader = kwargs.pop('skip_loader', False)
             if skip_loader:
                 log.msg('Skipping loader.match()')

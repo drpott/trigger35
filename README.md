@@ -7,6 +7,7 @@ network automation using trigger for me
  - fixed gong script (telnet and ssh works now)
  - fixed netdevices
  - fixed commands with commando
+ - made netdevices leaner (got rid of Prodonly, ACLs - who uses ACLs nowadays)
 
 ## work to do
  - other shit most likely

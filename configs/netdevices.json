@@ -5,6 +5,7 @@
 	"deviceType": "FIREWALL",
 	"manufacturer": "FORTINET",
 	"comment": "",
+	"ipAddr": "10.65.65.1",
 	"OOBTerminalServerConnector": "null"
     },
 
@@ -40,7 +41,6 @@
      "make": "CISCO SYSTEMS",
      "model": "TA5000",
      "deviceType": "OLT",
-     "enablePW": "PASSWORD",
      "comment": "hello",
      "serialNumber": "ADTN191706d2",
      "ipAddr": "10.65.65.1"},
