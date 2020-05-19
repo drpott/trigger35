@@ -192,10 +192,10 @@ def test_trigger():
 def test_normal():
     from twisted.internet import reactor
 
-    server = b'10.65.65.254'
+    server = b'1.1.1.1'
     command = b'get system info admin status'
-    username = b'dpottumati'
-    password = b'@WSX4rfv'
+    username = b'user'
+    password = b'pass'
 
     def print_result(result):
         print("The results:")
@@ -213,10 +213,10 @@ if __name__ == '__main__':
     #test_normal()
     test_trigger()
 """
-    server = b'10.65.65.254'
+    server = b'1.1.1.1'
     command = b'get system info admin status'
-    username = b'dpottumati'
-    password = b'@WSX4rfv'
+    username = b'user'
+    password = b'pass'
     factory = ClientCommandFactory(username, password, command)
     reactor.connectTCP(server, 22, factory)
     reactor.run()

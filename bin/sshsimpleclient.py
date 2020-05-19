@@ -155,8 +155,8 @@ class ClientCommandFactory(protocol.ClientFactory):
     protocol = SimpleUserAuth
 
     def __init__(self):
-        self.username = b'dpottumati'
-        self.password = b'@WSX4rfv'
+        self.username = b'user'
+        self.password = b'pass'
         self.command = b'get system info admin status'
 
     """
@@ -174,5 +174,5 @@ reactor.run()
 
 
 factory = ClientCommandFactory()
-reactor.connectTCP('10.65.65.254', 22, factory)
+reactor.connectTCP('1.1.1.1', 22, factory)
 reactor.run()
