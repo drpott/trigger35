@@ -67,47 +67,44 @@ def _munge_source_data(data_source=settings.NETDEVICES_SOURCE):
     :param data_source:
         Absolute path to source data file
     """
+    
     log.msg('LOADING FROM: ', data_source)
     kwargs = parse_url(data_source)
     path = kwargs.pop('path')
     return loader.load_metadata(path, **kwargs)
 
 
-def _populate(netdevices, data_source, production_only, with_acls):
+def _populate(netdevices, data_source):
     """
     Populates the NetDevices with NetDevice objects.
 
     Abstracted from within NetDevices to prevent accidental repopulation of NetDevice
     objects.
     """
+    
     #start = time.time()
     loader, device_data = _munge_source_data(data_source=data_source)
     netdevices.set_loader(loader)
 
     # Populate AclsDB if `with_acls` is set
-    if with_acls:
-        log.msg("NetDevices ACL associations: ENABLED")
-        aclsdb = AclsDB()
-    else:
-        log.msg("NetDevices ACL associations: DISABLED")
-        aclsdb = None
-
+    aclsdb = None
+        
     # Populate `netdevices` dictionary with `NetDevice` objects!
     for obj in device_data:
         # Don't process it if it's already a NetDevice
         if isinstance(obj, NetDevice):
             dev = obj
         else:
-            dev = NetDevice(data=obj, with_acls=aclsdb)
+            dev = NetDevice(data=obj)
 
         # Only return devices with adminStatus of 'PRODUCTION' unless
         # `production_only` is True
+        """
         if dev.adminStatus.upper() != 'PRODUCTION' and production_only:
-            log.msg(
-                '[%s] Skipping: adminStatus not PRODUCTION' % dev.nodeName
-            )
+            log.msg('[%s] Skipping: adminStatus not PRODUCTION' % dev.nodeName)
             continue
-
+        """
+        
         # These checks should be done on generation of netdevices.xml.
         # Skip empty nodenames
         if dev.nodeName is None:
@@ -120,7 +117,7 @@ def _populate(netdevices, data_source, production_only, with_acls):
     #print 'Took %f seconds' % (end - start)
 
 
-def device_match(name, production_only=True):
+def device_match(name):
     """
     Return a matching :class:`~trigger.netdevices.NetDevice` object based on
     partial name. Return `None` if no match or if multiple matches is
@@ -142,8 +139,9 @@ def device_match(name, production_only=True):
         Matched 'fw1-xyz.net.aol.com'.
         <NetDevice: fw1-xyz.net.aol.com>
     """
+    
     match = None
-    nd = NetDevices(production_only)
+    nd = NetDevices()
     try:
         match = nd.find(name)
     except KeyError:
@@ -151,7 +149,6 @@ def device_match(name, production_only=True):
         if matches:
             if len(matches) == 1:
                 single = matches[0]
-                print("Matched '%s'." % single)
                 return single
 
             print("%d possible matches found for '%s':" % (len(matches), name))
@@ -172,7 +169,7 @@ def device_match(name, production_only=True):
 
 
 # Classes
-class NetDevice(object):
+class NetDevice():
     """
     An object that represents a distinct network device and its metadata.
 
@@ -186,7 +183,7 @@ class NetDevice(object):
     `~trigger.netdevice.NetDevices` to do this for you.
     """
 
-    def __init__(self, data=None, with_acls=None):
+    def __init__(self, data=None):
         # Here comes all of the bare minimum set of attributes a NetDevice
         # object needs for basic functionality within the existing suite.
 
@@ -203,19 +200,11 @@ class NetDevice(object):
         self.serialNumber = None
 
         # Administrivia
-        self.adminStatus = settings.DEFAULT_ADMIN_STATUS
-        self.assetID = None
-        self.budgetCode = None
-        self.budgetName = None
         self.enablePW = None
         self.owningTeam = None
-        self.owner = None
-        self.onCallName = None
-        self.operationStatus = None
-        self.lastUpdate = None
-        self.lifecycleStatus = None
-        self.projectName = None
-
+        self.comments = None
+        self.ipAddr = None
+        
         # Location
         self.site = None
         self.room = None
@@ -226,7 +215,7 @@ class NetDevice(object):
             self._populate_data(data)
 
         # Set node remote port based on "hostname:port" as nodeName
-        self._set_node_port()
+        self._set_node_port()    
 
         # Cleanup the attributes (strip whitespace, lowercase values, etc.)
         self._cleanup_attributes()
@@ -240,11 +229,13 @@ class NetDevice(object):
             self._populate_deviceType()
 
         # ACLs (defaults to empty sets)
+        """
         self.explicit_acls = self.implicit_acls = self.acls = self.bulk_acls = set()
         if with_acls:
             log.msg('[%s] Populating ACLs' % self.nodeName)
             self._populate_acls(aclsdb=with_acls)
-
+        """
+        
         # Bind the correct execute/connect methods based on deviceType
         self._bind_dynamic_methods()
 
@@ -301,6 +292,7 @@ class NetDevice(object):
 
     def _set_node_port(self):
         """Set the freakin' TCP port"""
+        
         # If nodename is set, try to parse out a nodePort
         if self.nodeName is not None:
             nodeport_info = parse_node_port(self.nodeName)
@@ -355,6 +347,7 @@ class NetDevice(object):
         Set the commands to run at startup. For now they are just ones to
         disable pagination.
         """
+        
         def get_vendor_name():
             """Return the vendor name for startup commands lookup."""
             if self.is_brocade_vdx():
@@ -378,6 +371,7 @@ class NetDevice(object):
         """
         Return the proper "commit" command. (e.g. write mem, etc.)
         """
+        
         if self.is_ioslike():
             return self._ioslike_commit()
         elif self.is_netscaler() or self.is_netscreen():
@@ -399,6 +393,7 @@ class NetDevice(object):
         """
         Return proper 'write memory' command for IOS-like devices.
         """
+        
         if self.is_brocade_vdx() or self.vendor == 'dell':
             return ['copy running-config startup-config', 'y']
         elif self.is_cisco_nexus():
@@ -411,6 +406,7 @@ class NetDevice(object):
         Return proper ``commit-configuration`` element for a Juniper
         device.
         """
+        
         default = [JUNIPER_COMMIT]
         if not fields:
             return default
@@ -841,29 +837,31 @@ class NetDevice(object):
     def dump(self):
         """Prints details for a device."""
         dev = self
-        print()
-        print('\tHostname:         ', dev.nodeName)
-        print('\tOwning Org.:      ', dev.owner)
-        print('\tOwning Team:      ', dev.owningTeam)
-        print('\tOnCall Team:      ', dev.onCallName)
-        print()
-        print('\tVendor:           ', '%s (%s)' % (dev.vendor.title, dev.manufacturer))
-        #print '\tManufacturer:     ', dev.manufacturer
-        print('\tMake:             ', dev.make)
-        print('\tModel:            ', dev.model)
-        print('\tType:             ', dev.deviceType)
-        print('\tLocation:         ', dev.site, dev.room, dev.coordinate)
-        print()
-        print('\tProject:          ', dev.projectName)
-        print('\tSerial:           ', dev.serialNumber)
-        print('\tAsset Tag:        ', dev.assetID)
-        print('\tBudget Code:      ', '%s (%s)' % (dev.budgetCode, dev.budgetName))
-        print()
-        print('\tAdmin Status:     ', dev.adminStatus)
-        print('\tLifecycle Status: ', dev.lifecycleStatus)
-        print('\tOperation Status: ', dev.operationStatus)
-        print('\tLast Updated:     ', dev.lastUpdate)
-        print()
+        print("""
+        Hostname:         {}
+        Owning Team:      {}
+
+        Vendor:           {} {}
+        Make:             {}
+        Model:            {}
+        Type:             {}
+        Location:         {} {} {}
+
+        Serial:           {}
+        IP Address:       {}
+        Commnents:        {}
+
+""".format(dev.nodeName,
+           dev.owningTeam,
+           dev.vendor.title, dev.manufacturer,
+           dev.make,
+           dev.model,
+           dev.deviceType,
+           dev.site, dev.room, dev.coordinate,
+           dev.serialNumber,
+           dev.ipAddr,
+           dev.comment))
+           
 
 class Vendor(object):
     """
@@ -1002,13 +1000,11 @@ class NetDevices(DictMixin):
             TypeError: unbound method match() must be called with _actual
             instance as first argument (got str instance instead)
         """
-        def __init__(self, production_only=True, with_acls=None):
+        def __init__(self):
             self.loader = None
             self.__dict = {}
 
-            _populate(netdevices=self,
-                      data_source=settings.NETDEVICES_SOURCE,
-                      production_only=production_only, with_acls=with_acls)
+            _populate(netdevices=self, data_source=settings.NETDEVICES_SOURCE)
 
         def set_loader(self, loader):
             """
@@ -1068,6 +1064,7 @@ class NetDevices(DictMixin):
             :param string key: Hostname prefix to find.
             :returns: NetDevice object
             """
+            
             key = key.lower()
 
             # Try to use the loader plugin first.
@@ -1208,7 +1205,7 @@ class NetDevices(DictMixin):
             """Returns a list of NetDevice objects with deviceType of FIREWALL"""
             return self.get_devices_by_type('FIREWALL')
 
-    def __init__(self, production_only=True, with_acls=None):
+    def __init__(self):
         """
         :param production_only:
             Whether to require devices to have ``adminStatus=='PRODUCTION'``.
@@ -1217,12 +1214,10 @@ class NetDevices(DictMixin):
             Whether to load ACL associations (requires Redis). Defaults to whatever
             is specified in settings.WITH_ACLS
         """
-        if with_acls is None:
-            with_acls = settings.WITH_ACLS
+        
         classobj = self.__class__
         if classobj._Singleton is None:
-            classobj._Singleton = classobj._actual(production_only=production_only,
-                                                   with_acls=with_acls)
+            classobj._Singleton = classobj._actual()
 
     def __getattr__(self, attr):
         return getattr(self.__class__._Singleton, attr)

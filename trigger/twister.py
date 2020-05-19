@@ -305,7 +305,7 @@ def connect(device, init_commands=None, output_logger=None, login_errback=None,
     """
 
     # Need to pass ^C through to the router so we can abort traceroute, etc.
-    print(('Connecting to %s.  Use ^X to exit.' % device))
+    #print(('Connecting to %s.  Use ^X to exit.' % device))
 
     # Fetch the initial commands for the device
     if init_commands is None:

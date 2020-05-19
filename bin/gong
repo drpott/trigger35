@@ -53,12 +53,11 @@ def main():
         log.startLogging(sys.stdout, setStdout=False)
 
     # Exception handling is done in device_match, returns None if no match.
-    dev = device_match(args[1].lower(), production_only=False)
+    dev = device_match(args[1].lower())
     if dev is None:
         return 2
 
-    if hasattr(dev, 'OLTInterface'):
-        print(('OLT interface: '+dev.OLTInterface))
+    print(dev.comment)
 
     # Connect to the device... and make sure to capture its exit code
     retval = dev.connect()

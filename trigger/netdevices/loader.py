@@ -78,6 +78,7 @@ def find_data_loader(loader):
         A string represnting the Python path to a Loader object, or list/tuple
         of loader path and args to pass to the Loader.
     """
+    
     if isinstance(loader, (tuple, list)):
         loader, args = loader[0], loader[1:]
     else:
@@ -137,6 +138,7 @@ def load_metadata(data_source, **kwargs):
     :returns:
         `~trigger.netdevices.loader.LoaderMetadata` instance
     """
+    
     # Iterate and build a loader callables, call them, stop when we get data.
     tried = []
     log.msg('LOADING DATA FROM:', data_source)
