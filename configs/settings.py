@@ -323,10 +323,10 @@ AUTOACL_FILE = os.environ.get('AUTOACL_FILE', os.path.join(PREFIX, 'autoacl.py')
 # initialization.
 NETDEVICES_LOADERS = (
     'trigger.netdevices.loaders.filesystem.JSONLoader',
-    'trigger.netdevices.loaders.filesystem.XMLLoader',
-    'trigger.netdevices.loaders.filesystem.SQLiteLoader',
-    'trigger.netdevices.loaders.filesystem.CSVLoader',
-    'trigger.netdevices.loaders.filesystem.RancidLoader',
+    #'trigger.netdevices.loaders.filesystem.XMLLoader',
+    #'trigger.netdevices.loaders.filesystem.SQLiteLoader',
+    #'trigger.netdevices.loaders.filesystem.CSVLoader',
+    #'trigger.netdevices.loaders.filesystem.RancidLoader',
     # Example of a database loader where the db information is sent along as an
     # argument. The args can be anything you want.
     #['trigger.netdevices.loaders.mysql.Loader', {'dbuser': 'root', 'dbpass': 'abc123', 'dbhost': 'localhost', 'dbport': 3306}, 'bacon'],

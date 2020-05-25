@@ -101,8 +101,7 @@ def find_data_loader(loader):
         if hasattr(DataLoader, 'load_data_source'):
             func = DataLoader(*args)
         else:
-            # Try loading module the old-fashioned way where string is full
-            # path to callabale.
+            # Try loading module the old-fashioned way where string is full path to callabale.
             if args:
                 raise ImproperlyConfigured("Error importing data source loader %s: Can't pass arguments to function-based loader!" % loader)
             func = DataLoader
@@ -142,13 +141,13 @@ def load_metadata(data_source, **kwargs):
     # Iterate and build a loader callables, call them, stop when we get data.
     tried = []
     log.msg('LOADING DATA FROM:', data_source)
+    
     for loader_name in settings.NETDEVICES_LOADERS:
         loader = find_data_loader(loader_name)
         log.msg('TRYING LOADER:', loader)
         if loader is None:
             log.msg('CANNOT USE LOADER:', loader)
             continue
-
         try:
             # Pass the args to the loader!
             data = loader(data_source, **kwargs)

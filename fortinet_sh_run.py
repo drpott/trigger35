@@ -9,11 +9,11 @@ from trigger.tacacsrc import get_device_password
 from trigger.netdevices import NetDevices
 from twisted.internet import reactor, defer
 from twisted.python import log
-
+import json
 
 # Uncomment me for verbose logging.
-# import sys
-# log.startLogging(sys.stdout, setStdout=False)
+import sys
+#log.startLogging(sys.stdout, setStdout=False)
 
 
 def stop_reactor(result):
@@ -24,29 +24,25 @@ def stop_reactor(result):
 
 class showSessionList(ReactorlessCommando):
     """Execute 'show clock' on a list of Cisco devices."""
-    commands = ['show configuration | display set']
+    commands = ['show']
 
-    def to_juniper(self, dev, commands=None, extra=None):
-        return self.commands
-
-        
+    
 def print_me(data):
     print 'Result:', data    
 
     
 if __name__ == '__main__':
     # Replace these with real device IPs/hostnames in your network
-    devices = ['tor', 'tor1', 'tor2']
-    cisco_devices = ["C-CNS-M-001"]
+    devices = ['fortinet']
+
     # nd = NetDevices()
     # dev = nd.find('svp00c')
     # async = dev.execute(['show clock'])
     # async.addCallback(print_me)
     
-    c1 = showSessionList(devices, creds=get_device_password('tor'), )
-    c2 = showSessionList(devices, creds=get_device_password('tor1'), )
-    c3 = showSessionList(devices, creds=get_device_password('tor2'), )
-    instances = [c1, c2, c3]
+    c1 = showSessionList(devices, creds=get_device_password('fortinet'), )
+
+    instances = [c1]
 
     # Once every task has returned a result, stop the reactor
     deferreds = []
@@ -57,9 +53,7 @@ if __name__ == '__main__':
 
     d.addBoth(stop_reactor)
     reactor.run()
-    
+
     for c_id, c_info in c1.results.items():
         for key in c_info:
             print("command: {}\n {}".format(key, c_info[key]))
-
-#    print(c1.parsed_results)

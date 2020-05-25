@@ -64,7 +64,6 @@ def _munge_source_data(data_source=settings.NETDEVICES_SOURCE):
     :param data_source:
         Absolute path to source data file
     """
-    
     log.msg('LOADING FROM: ', data_source)
     kwargs = parse_url(data_source)
     path = kwargs.pop('path')
@@ -938,10 +937,10 @@ class NetDevices(DictMixin):
             TypeError: unbound method match() must be called with _actual
             instance as first argument (got str instance instead)
         """
+        
         def __init__(self):
             self.loader = None
             self.__dict = {}
-
             _populate(netdevices=self, data_source=settings.NETDEVICES_SOURCE)
 
         def set_loader(self, loader):

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+#!/usr/bin/env python
 
 """
 commando_reactorless.py - Running multiple Commando's in the same script
@@ -24,29 +25,25 @@ def stop_reactor(result):
 
 class showSessionList(ReactorlessCommando):
     """Execute 'show clock' on a list of Cisco devices."""
-    commands = ['show configuration | display set']
+    commands = ['show running-config']
 
-    def to_juniper(self, dev, commands=None, extra=None):
-        return self.commands
-
-        
+    
 def print_me(data):
     print 'Result:', data    
 
     
 if __name__ == '__main__':
     # Replace these with real device IPs/hostnames in your network
-    devices = ['tor', 'tor1', 'tor2']
-    cisco_devices = ["C-CNS-M-001"]
+    devices = ['OLT']
+
     # nd = NetDevices()
     # dev = nd.find('svp00c')
     # async = dev.execute(['show clock'])
     # async.addCallback(print_me)
     
-    c1 = showSessionList(devices, creds=get_device_password('tor'), )
-    c2 = showSessionList(devices, creds=get_device_password('tor1'), )
-    c3 = showSessionList(devices, creds=get_device_password('tor2'), )
-    instances = [c1, c2, c3]
+    c1 = showSessionList(devices, creds=get_device_password('OLT'), )
+
+    instances = [c1]
 
     # Once every task has returned a result, stop the reactor
     deferreds = []

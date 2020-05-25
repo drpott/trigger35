@@ -267,6 +267,7 @@ class Commando(object):
         Adds devices to the work queue to keep it populated with the maximum
         connections as specified by ``max_conns``.
         """
+        
         while self.jobs and self.curr_conns < self.max_conns:
             device = self.select_next_device()
             if device is None:
@@ -282,12 +283,9 @@ class Commando(object):
 
             # Setup the async Deferred object with a timeout and error printing.
             commands = self.generate(device)
-            async = device.execute(commands, creds=self.creds,
-                                   incremental=self.incremental,
-                                   timeout=self.timeout,
-                                   with_errors=self.with_errors,
-                                   force_cli=self.force_cli,
-                                   command_interval=self.command_interval)
+            async = device.execute(commands, creds=self.creds, incremental=self.incremental,
+                                   timeout=self.timeout, with_errors=self.with_errors,
+                                   force_cli=self.force_cli, command_interval=self.command_interval)
 
             # Add the template parser callback for great justice!
             async.addCallback(self.parse_template, device, commands)
@@ -301,8 +299,7 @@ class Commando(object):
             # Make sure any further uncaught errors get logged
             async.addErrback(log.err)
 
-            # Here we addBoth to continue on after pass/fail, decrement the
-            # connections and move on.
+            # Here we addBoth to continue on after pass/fail, decrement the connections and move on.
             async.addBoth(self._decrement_connections)
             async.addBoth(lambda x: self._add_worker())
 
@@ -331,20 +328,14 @@ class Commando(object):
         :param method:
             One of 'generate', 'parse'
         """
-        METHOD_MAP = {
-            'generate': 'to_%s',
-            'parse': 'from_%s',
-        }
+        
+        METHOD_MAP = { 'generate': 'to_%s', 'parse': 'from_%s', }
         assert method in METHOD_MAP
 
         desired_method = None
 
         # Select the desired vendor name.
         desired_vendor = device.vendor.name
-
-        # Workaround until we implement device drivers
-        if device.is_netscreen():
-            desired_vendor = 'netscreen'
 
         vendor_types = self.platforms.get(desired_vendor)
         method_name = METHOD_MAP[method] % desired_vendor  # => 'to_cisco'
@@ -359,9 +350,7 @@ class Commando(object):
         else:
             raise exceptions.UnsupportedDeviceType(
                 'Device %r has an invalid type %r for vendor %r. Must be '
-                'one of %r.' % (device.nodeName, device_type,
-                                desired_vendor, vendor_types)
-            )
+                'one of %r.' % (device.nodeName, device_type, desired_vendor, vendor_types))
 
         if desired_method is None:
             if self.allow_fallback:

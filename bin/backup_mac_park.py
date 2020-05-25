@@ -3,59 +3,51 @@
 import sys
 sys.path.append(r'/home/dan/python35/trigger35')
 
+"""
+commando_reactorless.py - Running multiple Commando's in the same script
+"""
+
 from trigger.cmds import ReactorlessCommando
 from trigger.tacacsrc import get_device_password
+from trigger.netdevices import NetDevices
 from twisted.internet import reactor, defer
 from twisted.python import log
 
-#MAC='00:24:45' # ADTRAN switches
-#MAC='64:9f:f7' # KONE
-#MAC='00:90:e8' # MOXA switches
-#MAC='00:17:88:0b:6a:c6' # Philips lighting
-#MAC='18:e8:29'  # Blinds AP-ACj Pro
-#MAC='74:83:c2'  # Blinds AP-ACj Pro
-#MAC='b8:27:eb:5e:77:fb'  # Blinds controller
-#MAC='f4:0b:7f' #lighting controller vlan216
-#MAC='54:ec:2f' # ruckus wifi aps
-#MAC='1c:5f:2b' #smart lockers
-#MAC=00:15:65:ab:19:34 #VOIP commander
-#MAC='b6:0e'
 
-
-class findMacAddress(ReactorlessCommando):
-    """Execute on a list of devices."""
-
-    def to_adtran(self, dev, commands=None, extra=None):
-        cmds = [b'show mac address-table | include '+self.commands]
-        if dev.deviceType == 'OLT':
-            self.creds = get_device_password('olt')
-        return cmds
-    
-    def to_juniper(self, dev, commands=None, extra=None):
-        cmds = [b'show ethernet-switching table | match '+self.commands]
-        self.creds = creds=get_device_password('tor')
-        return cmds
-
-    def to_fortinet(self, dev, commands=None, extra=None):
-        cmds = [b'get system arp | grep '+self.commands]
-        self.creds=get_device_password('fortinet')
-        return cmds
-    
 def stop_reactor(result):
     if reactor.running:
         log.msg('STOPPING REACTOR!')
         reactor.stop()
     return result
 
-def printResults(cmd):
-    for c_id, c_info in cmd.results.items():
-        for key in c_info:
-            print("DEV: {}   CMD: {}\n{}".format(c_id,
-                                                 key.decode('utf-8'),
-                                                 c_info[key].decode('utf-8')))
+
+class backMeUp(ReactorlessCommando):
+    """Execute on a list of devices."""
+
+    def to_adtran(self, dev, commands=None, extra=None):
+        cmds = [b'show running-config']
+        self.timeout = 300
+        if dev.deviceType == 'OLT':
+            self.creds = get_device_password('olt')
+            
+        return cmds
+    
+    def to_juniper(self, dev, commands=None, extra=None):
+        cmds = [b'show configuration | display set']
+        self.timeout = 300
+        self.creds = creds=get_device_password('tor')
+
+        return cmds
+
+    def to_fortinet(self, dev, commands=None, extra=None):
+        cmds = [b'show']
+        self.timeout = 300
+        self.creds=get_device_password('fortinet')
+
+        return cmds
+
 
 if __name__ == '__main__':
-
     dev_list = [
         "C-CNS-M-001",         "C-CNS-M-002",         "C-CNS-M-003",
         "C-CNS-B1-001",        "C-CNS-B1-002",        "C-CNS-B2-001",
@@ -68,11 +60,13 @@ if __name__ == '__main__':
         "C-CNS-L7-002",        "C-CNS-L8-001",        "C-CNS-L8-002",
         "C-CNS-L8-003",        "C-CNS-L8-004",        "C-CNS-L8-005",
         "tor",                 "tor1",                "tor2",
-        "fortinet",            "olt",
+        "olt",
+        "fortinet",
     ]
     
-    c1 = findMacAddress(dev_list, commands=sys.argv[1].encode('utf-8') )
+    c1 = backMeUp(dev_list, max_conns=40)
     instances = [c1]
+
     # Once every task has returned a result, stop the reactor
     deferreds = []
     for i in instances:
@@ -83,5 +77,8 @@ if __name__ == '__main__':
     d.addBoth(stop_reactor)
     reactor.run()
 
-    for i in instances:
-        printResults(i)
+    for c_id, c_info in c1.results.items():
+        for key in c_info:
+            print("DEV: {}   CMD: {}\n{}".format(c_id,
+                                                 key.decode('utf-8'),
+                                                 c_info[key].decode('utf-8')))

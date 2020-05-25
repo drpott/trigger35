@@ -89,8 +89,7 @@ class RancidLoader(BaseLoader):
 
     def load_data_source(self, data_source, **kwargs):
         # We want to make sure that we've set this variable
-        recurse_subdirs = kwargs.get('recurse_subdirs',
-                                     settings.RANCID_RECURSE_SUBDIRS)
+        recurse_subdirs = kwargs.get('recurse_subdirs', settings.RANCID_RECURSE_SUBDIRS)
         try:
             return self.get_data(data_source, recurse_subdirs)
         except Exception as err:

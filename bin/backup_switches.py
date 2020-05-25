@@ -1,14 +1,11 @@
 #!/usr/bin/env python
 
-import sys
-sys.path.append(r'/home/dan/python35/trigger35')
-
 from trigger.cmds import Commando
 
 class showRun(Commando):
     """Execute 'show clock' on a list of Cisco devices."""
     vendors = ['cisco']
-    commands = [b'show running-config']
+    commands = ["show running-config"]
     
 if __name__ == '__main__':
     device_list = [
@@ -46,7 +43,6 @@ if __name__ == '__main__':
     shorun = showRun(devices=device_list)
     shorun.run() # Commando exposes this to start the event loop
 
-    for c_id, c_info in list(shorun.results.items()):
+    for c_id, c_info in shorun.results.items():
         for key in c_info:
-            print(("SWITCH: {} command: {}\n {}".format(c_id, key.decode('utf-8'),
-                                                        c_info[key].decode('utf-8'))))
+            print("SWITCH: {} command: {}\n {}".format(c_id, key, c_info[key]))
