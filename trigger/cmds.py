@@ -120,9 +120,9 @@ class Commando(object):
          Whether to stop the reactor loop when all results have returned.
          (Default: ``True``)
     """
+    
     # Defaults to all supported vendors
     vendors = settings.SUPPORTED_VENDORS
-
     # Defaults to all supported platforms
     platforms = settings.SUPPORTED_PLATFORMS
 
@@ -217,6 +217,7 @@ class Commando(object):
         "Maps device hostnames to `~trigger.netdevices.NetDevice` objects and
         populates the job queue.
         """
+        
         for dev in self.devices:
             log.msg('Adding', dev)
             if self.verbose:
@@ -230,13 +231,11 @@ class Commando(object):
                 log.err(msg)
                 if self.verbose:
                     print('ERROR:', msg)
-
                 # Track the errors and keep moving
                 self.store_error(dev, msg)
                 continue
 
-            # We only want to add devices for which we've enabled support in
-            # this class
+            # We only want to add devices for which we've enabled support in this class
             if devobj.vendor not in self.vendors:
                 raise exceptions.UnsupportedVendor("The vendor '%s' is not specified in ``vendors``. Could not add %s to job queue. Please check the attribute in the class object." % (devobj.vendor, devobj))
 
@@ -353,15 +352,10 @@ class Commando(object):
 
         if device_type in vendor_types:
             if hasattr(self, method_name):
-                log.msg(
-                    '[%s] Found %r method: %s' % (device, method, method_name)
-                )
+                log.msg('[%s] Found %r method: %s' % (device, method, method_name))
                 desired_method = method_name
             else:
-                log.msg(
-                    '[%s] Did not find %r method: %s' % (device, method,
-                                                         method_name)
-                )
+                log.msg('[%s] Did not find %r method: %s' % (device, method, method_name))
         else:
             raise exceptions.UnsupportedDeviceType(
                 'Device %r has an invalid type %r for vendor %r. Must be '
@@ -408,6 +402,7 @@ class Commando(object):
             (Optional) A dictionary of extra data to send to the generate
             method for the device.
         """
+        
         if commands is None:
             commands = self.commands
         if extra is None:

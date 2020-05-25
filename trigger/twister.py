@@ -351,8 +351,6 @@ def _choose_execute(device, force_cli=False):
         _execute = execute_netscaler
     elif device.is_netscreen():
         _execute = execute_netscreen
-    elif device.vendor == 'fortinet':
-        _execute = execute_async_pty_ssh
     elif device.vendor == 'juniper':
         if force_cli:
             _execute = execute_async_pty_ssh
@@ -973,6 +971,7 @@ class TriggerSSHConnection(SSHConnection):
         
     def serviceStarted(self):
         """Open the channel once we start."""
+        
         log.msg('channel = %r' % self.transport.factory.channel_class)
         self.channel_class = self.transport.factory.channel_class
         self.command_interval = self.transport.factory.command_interval
@@ -1117,6 +1116,7 @@ class TriggerSSHPtyChannel(channel.SSHChannel):
 
     def channelOpen(self, data):
         """Setup the terminal when the channel opens."""
+        
         pr = session.packRequest_pty_req(settings.TERM_TYPE, self._get_window_size(), '')
         self.conn.sendRequest(self, 'pty-req', pr, 1)
         self.conn.sendRequest(self, 'shell', b'', 1)
@@ -1276,8 +1276,7 @@ class TriggerSSHChannelBase(channel.SSHChannel, TimeoutMixin):
         self.resetTimeout()  # Reset the timeout
 
         if not self.initialized:
-            log.msg('[%s] Not initialized; sending startup commands' %
-                    self.device)
+            log.msg('[%s] Not initialized; sending startup commands' % self.device)
             if self.startup_commands:
                 next_init = self.startup_commands.pop(0)
                 log.msg('[%s] Sending initialize command: %r' % (self.device, next_init))
@@ -1287,7 +1286,6 @@ class TriggerSSHChannelBase(channel.SSHChannel, TimeoutMixin):
                 log.msg('[%s] Successfully initialized for command execution' % self.device)
                 self.initialized = True
                 self.enabled = True  # Disable further enable checks.
-
 
         if self.incremental:
             self.incremental(self.results)
@@ -1616,6 +1614,7 @@ class IncrementalXMLTreeBuilder(TreeBuilder):
     We need this because JunoScript treats the entire session as one XML
     document. IETF NETCONF fixes that.
     """
+    
     def __init__(self, callback, *args, **kwargs):
         self._endhandler = callback
         TreeBuilder.__init__(self, *args, **kwargs)
@@ -1632,6 +1631,7 @@ class TriggerTelnetClientFactory(TriggerClientFactory):
     """
     Factory for a telnet connection.
     """
+    
     def __init__(self, deferred, action, creds=None, loginpw=None, enablepw=None, init_commands=None, device=None):
         self.protocol = TriggerTelnet
         self.action = action

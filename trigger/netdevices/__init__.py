@@ -94,14 +94,6 @@ def _populate(netdevices, data_source):
         else:
             dev = NetDevice(data=obj)
 
-        # Only return devices with adminStatus of 'PRODUCTION' unless
-        # `production_only` is True
-        """
-        if dev.adminStatus.upper() != 'PRODUCTION' and production_only:
-            log.msg('[%s] Skipping: adminStatus not PRODUCTION' % dev.nodeName)
-            continue
-        """
-        
         # These checks should be done on generation of netdevices.xml.
         # Skip empty nodenames
         if dev.nodeName is None:
@@ -252,6 +244,7 @@ class NetDevice():
         :param data:
             An iterable of key/value pairs
         """
+        
         self.__dict__.update(data) # Better hope this is a dict!
 
     def _cleanup_attributes(self):
@@ -306,8 +299,7 @@ class NetDevice():
         RULES = (
             self.vendor in (
                 'a10', 'arista', 'aruba', 'cisco', 'cumulus', 'force10'
-            ),
-            self.is_brocade_vdx(),
+            ), self.is_brocade_vdx(),
         )
         
         return any(RULES)
@@ -316,10 +308,9 @@ class NetDevice():
         """
         Set the delimiter to use for line-endings.
         """
+        
         default = b'\n'
-        delimiter_map = {
-            'force10': b'\r\n',
-        }
+        delimiter_map = { 'force10': b'\r\n', }
         delimiter = delimiter_map.get(self.vendor.name, default)
         return delimiter
 
@@ -331,6 +322,7 @@ class NetDevice():
         
         def get_vendor_name():
             """Return the vendor name for startup commands lookup."""
+            
             if self.is_brocade_vdx():
                 return 'brocade_vdx'
             elif self.is_cisco_asa():
@@ -409,6 +401,7 @@ class NetDevice():
 
         Note that these both rely on the value of the ``vendor`` attribute.
         """
+        
         from trigger import twister
         self.execute = twister.execute.__get__(self, self.__class__)
         self.connect = twister.connect.__get__(self, self.__class__)
@@ -602,9 +595,7 @@ class NetDevice():
             result.addBoth(on_error)
             return proto
 
-        proto = proto.addCallbacks(
-            inject_commands_into_protocol
-        )
+        proto = proto.addCallbacks(inject_commands_into_protocol)
 
         return d
 
@@ -681,6 +672,7 @@ class NetDevice():
         switches (which behave like Foundry devices) and the Brocade VDX
         switches (which behave differently from classic Foundry devices).
         """
+        
         if hasattr(self, '_is_brocade_vdx'):
             return self._is_brocade_vdx
 
@@ -737,11 +729,13 @@ class NetDevice():
 
     def _ssh_enabled(self, disabled_mapping):
         """Check whether vendor/type is enabled against the given mapping."""
+        
         disabled_types = disabled_mapping.get(self.vendor.name, [])
         return self.deviceType not in disabled_types
 
     def has_ssh(self):
         """Am I even listening on SSH?"""
+        
         return network.test_ssh(self.nodeName)
 
     def _can_ssh(self, method):
@@ -821,6 +815,7 @@ class Vendor(object):
             The literal or "internal" name for a vendor that is to be mapped to
             its canonical name.
         """
+        
         if manufacturer is None:
             raise SyntaxError('You must specify a `manufacturer` name')
 
@@ -831,6 +826,7 @@ class Vendor(object):
 
     def determine_vendor(self, manufacturer):
         """Try to turn the provided vendor name into the cname."""
+        
         vendor = settings.VENDOR_MAP.get(manufacturer)
         if vendor is None:
             mparts = [w for w in manufacturer.lower().split()]

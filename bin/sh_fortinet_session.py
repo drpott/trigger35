@@ -11,12 +11,11 @@ from trigger.tacacsrc import get_device_password
 from trigger.netdevices import NetDevices
 from twisted.internet import reactor, defer
 from twisted.python import log
-import json
+
 
 # Uncomment me for verbose logging.
-import sys
-#log.startLogging(sys.stdout, setStdout=False)
-
+# import sys
+# log.startLogging(sys.stdout, setStdout=False)
 
 def stop_reactor(result):
     if reactor.running:
@@ -26,15 +25,10 @@ def stop_reactor(result):
 
 class showSessionList(ReactorlessCommando):
     """Execute 'show clock' on a list of Cisco devices."""
-    commands = [b'get system info admin status']
+    commands = [b'get system session list']
     vendor = ['fortinet']
 
-    
-def print_me(data):
-    print ('Result:')
-    print( data    )
 
-    
 if __name__ == '__main__':
     # Replace these with real device IPs/hostnames in your network
     devices = ['fortinet']
@@ -61,3 +55,5 @@ if __name__ == '__main__':
     for c_id, c_info in c1.results.items():
         for key in c_info:
             print("command: {}\n {}".format(key.decode('utf-8'), c_info[key].decode('utf-8')))
+
+#    print(c1.parsed_results)

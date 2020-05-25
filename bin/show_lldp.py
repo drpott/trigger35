@@ -10,14 +10,15 @@ from twisted.python import log
 
 class showRun(Commando):
     """Execute 'show clock' on a list of Cisco devices."""
-    vendors = ['cisco']
+    vendors = ['adtran']
     commands = [b'show lldp neighb']
         
     
     
 if __name__ == '__main__':
-    device_list = [
-        "C-CNS-M-001",
+    device_list = [ 'c-cns-b2-002']
+    """
+    "C-CNS-M-001",
         "C-CNS-M-002",
         "C-CNS-M-003",
         "C-CNS-B1-001",
@@ -47,7 +48,8 @@ if __name__ == '__main__':
         "C-CNS-L8-003",
         "C-CNS-L8-004",
         "C-CNS-L8-005",]
-
+    """
+    
     shorun = showRun(devices=device_list)
     shorun.run() # Commando exposes this to start the event loop
 

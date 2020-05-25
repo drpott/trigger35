@@ -76,6 +76,7 @@ SUPPORTED_PLATFORMS = {
     'checkpoint': ['FIREWALL'],
     'fortinet': ['FIREWALL'],
     'pica8': ['ROUTER', 'SWITCH'],
+    'adtran': ['OLT', 'SWITCH'],
 }
 
 # List of supported vendor names derived from SUPPORTED_PLATFORMS
@@ -109,6 +110,7 @@ VENDOR_MAP = {
     'MRV': 'mrv',
     'NETSCREEN TECHNOLOGIES': 'netscreen',
     'PICA8': 'pica8',
+    'ADTRAN': 'adtran',
 }
 
 # The tuple of support device types
@@ -145,6 +147,7 @@ DEFAULT_TYPES = {
     'netscreen': 'FIREWALL',
     'paloalto': 'FIREWALL',
     'pica8': 'SWITCH',
+    'adtran': 'SWITCH',
 }
 
 # When a vendor is not explicitly defined within `DEFAULT_TYPES`, fallback to
@@ -185,6 +188,7 @@ SSH_PTY_DISABLED = {
     'dell': ['SWITCH'],    # Dell SSH is just straight up broken
     'cisco': ['SWITCH','OLT'],
     'netscreen': ['FIREWALL'],
+    'adtran': ['SWITCH', 'OLT'],
 }
 
 # A mapping of vendors to the types of devices for that vendor for which you
@@ -194,6 +198,7 @@ SSH_ASYNC_DISABLED = {
     'dell': ['SWITCH', 'OLT'],    # Dell SSH is just straight up broken
     'foundry': ['SWITCH'], # Old Foundry switches only do SSHv1
     'cisco': ['SWITCH', 'OLT'],
+    'adtran': ['SWITCH', 'OLT'],
 }
 
 # Vendors that basically just emulate Cisco's IOS and can be treated
@@ -208,6 +213,7 @@ IOSLIKE_VENDORS = (
     'dell',
     'force10',
     'foundry',
+    'adtran',
 )
 
 
@@ -239,6 +245,8 @@ STARTUP_COMMANDS_MAP = {
     'mrv': ['no pause'],
     'netscreen': ['set console page 0'],
     'paloalto': ['set cli scripting-mode on', 'set cli pager off'],
+    'adtran': [b'terminal length 0'],
+    'fortinet': [b'config system console', b'set output standard', b'end',]
 }
 
 # Prompts sent by devices that indicate the device is awaiting user
