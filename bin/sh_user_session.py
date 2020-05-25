@@ -29,7 +29,9 @@ class showUserSessionList(ReactorlessCommando):
         return cmds
 
     def to_fortinet(self, dev, commands=None, extra=None):
-        commands = [b'get system session list']
+        commands = [b'get system admin list']
+        self.creds = get_device_password('fortinet')
+
         return commands
 
 
@@ -65,7 +67,7 @@ if __name__ == '__main__':
         "fortinet",            "olt",
     ]
     
-    c1 = showUserSessionList(dev_list, commands=sys.argv[1].encode('utf-8') )
+    c1 = showUserSessionList(dev_list, )
     instances = [c1]
     deferreds = []
     for i in instances:
