@@ -1,0 +1,11 @@
+Value PORT (\d+)
+Value LIMIT (\S+)
+Value CURRENT (\d+)
+Value VIOLATING (\S+)
+Value VIOLATION (\w+)
+
+Start
+  ^Interface\s+Users\s+Limit\s+Current\s+Violating\s+Violation\s+Mode\s+State
+  ^----------\s+-----\s+-----\s+-------\s+---------\s+--------------\s+-------------
+  ^Gi\s+1/${PORT}\s+\S+\s+${LIMIT}\s+${CURRENT}\s+${VIOLATING}\s${VIOLATION}.* -> Record
+  

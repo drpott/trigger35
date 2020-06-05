@@ -414,16 +414,15 @@ class Commando(object):
         :type device:
             `~trigger.netdevices.NetDevice`
         """
-
         device_type = device.os
         ret = []
-
+        
         for idx, command in enumerate(commands):
             if device_type:
                 try:
                     re_table = load_cmd_template(command, dev_type=device_type)
                     fsm = get_textfsm_object(re_table, results[idx])
-                    self.append_parsed_results(device, self.map_parsed_results(command, fsm))
+                    self.append_parsed_results(device, self.map_parsed_results(command.decode('utf-8'), fsm))
                 except:
                     log.msg("Unable to load TextFSM template, just updating with unstructured output")
 
@@ -456,6 +455,7 @@ class Commando(object):
         :type commands:
             list
         """
+
         func = self._lookup_method(device, method='parse')
         return func(results, device, commands)
 
@@ -470,6 +470,7 @@ class Commando(object):
         :param device:
             A `~trigger.netdevices.NetDevice` object
         """
+
         failure.trap(Exception)
         self.store_error(device, failure)
         #self._decrement_connections(failure)
@@ -545,6 +546,7 @@ class Commando(object):
 
     def map_results(self, commands=None, results=None):
         """Return a dict of ``{command: result, ...}``"""
+        
         if commands is None:
             commands = self.commands
         if results is None:

@@ -1,0 +1,7 @@
+Value INT (\d+)
+Value LIM (\S+)
+Value CUR (\d)
+Value VIOLATING (\S+)
+
+Start
+  ^Gi 1/${INT}\s+\S+\s+${LIM}\s+${CUR}\s+${VIOLATION}\s\w+\s+.* -> Record

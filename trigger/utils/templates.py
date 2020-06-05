@@ -53,8 +53,9 @@ def load_cmd_template(cmd, dev_type=None):
     :type  cmd: str
     :returns: String template path
     """
+
     try:
-        with open(get_template_path(cmd, dev_type=dev_type), 'rb') as f:
+        with open(get_template_path(cmd.decode('utf-8'), dev_type=dev_type), 'r') as f:
             return textfsm.TextFSM(f)
     except:
         log.msg("Unable to load template:\n{0} :: {1}".format(cmd, dev_type))
@@ -62,10 +63,11 @@ def load_cmd_template(cmd, dev_type=None):
 
 def get_textfsm_object(re_table, cli_output):
     "Returns structure object from TextFSM data."
+    
     from collections import defaultdict
     rv = defaultdict(list)
     keys = re_table.header
-    values = re_table.ParseText(cli_output)
+    values = re_table.ParseText(cli_output.decode('utf-8'))
     l = []
     for item in values:
         l.extend(zip(map(lambda x: x.lower(), keys), item))

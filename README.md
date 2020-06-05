@@ -29,6 +29,8 @@ network automation using trigger for me
    - pyasn1
    - SimpleParse
    - zope.interface
+   - bcrypt
+   - cryptography
 
 original project:
 https://github.com/trigger/trigger

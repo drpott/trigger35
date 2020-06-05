@@ -345,6 +345,7 @@ TEXTFSM_VENDOR_MAPPINGS = {
     "cisco": [ "ios", "nxos" ],
     "arista": [ "eos" ],
     "fortinet": [ "fortios"],
+    "adtran": ["aos"],
 }
 
 # TextFSM Template Path. Commando will attempt to match a given show command with a template within this folder.
