@@ -491,6 +491,7 @@ class Commando(object):
             The error to store. Anything you want really, but usually a Twisted
             ``Failure`` instance.
         """
+        
         devname = str(device)
         self.errors[devname] = error
         return True
@@ -532,6 +533,7 @@ class Commando(object):
         :param results:
             The results to store. Anything you want really.
         """
+        
         devname = str(device)
         log.msg("Storing results for %r: %r" % (devname, results))
         self.results[devname] = results

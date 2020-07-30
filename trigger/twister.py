@@ -326,6 +326,7 @@ def connect(device, init_commands=None, output_logger=None, login_errback=None, 
         # print '\nLogin failed for the following reason:\n'
         print('\nConnection failed for the following reason:\n')
         print(('%s\n' % login_failed.value))
+
         if login_failed.type == exceptions.LoginFailure:
             reconnect_handler(device.nodeName)
         print('BYE')
@@ -488,36 +489,6 @@ def execute_exec_ssh(device, commands, creds=None, incremental=None, with_errors
     return execute_generic_ssh(device, commands, creds, incremental, with_errors,
                                timeout, command_interval, channel_class, prompt_pattern, method,
                                connection_class)
-
-
-def execute_checkpoint(device, commands, creds=None, incremental=None, with_errors=False,
-                       timeout=settings.DEFAULT_TIMEOUT, command_interval=0,
-                       prompt_pattern=None):
-    """
-    Execute via SSH for a device that requires shell + pty-req.
-
-    Please see `~trigger.twister.execute` for a full description of the
-    arguments and how this works.
-
-    channel_class = TriggerSSHAsyncPtyChannel
- 
-    method = 'Async PTY'
-    if prompt_pattern is None:
-        prompt_pattern = device.vendor.prompt_pattern
-
-    return execute_generic_ssh(device, commands, creds, incremental,
-                               with_errors, timeout, command_interval,
-                               channel_class, prompt_pattern, method)
-    """
-
-    channel_class = TriggerSSHCPChannel
-    method = 'Async PTY'
-
-    if prompt_pattern is None:
-        prompt_pattern = device.vendor.prompt_pattern
-
-    return execute_generic_ssh(device, commands, creds, incremental, with_errors, timeout,
-                               command_interval, channel_class, prompt_pattern, method)
 
 
 def execute_junoscript(device, commands, creds=None, incremental=None, with_errors=False,

@@ -16,7 +16,7 @@ class showRun(Commando):
     
     
 if __name__ == '__main__':
-    device_list = [ 'c-cns-b2-002']
+    device_list = [ 'c-cns-b2-002', 'c-cns-b1-001']
     """
     "C-CNS-M-001",
         "C-CNS-M-002",
@@ -53,6 +53,7 @@ if __name__ == '__main__':
     shorun = showRun(devices=device_list)
     shorun.run() # Commando exposes this to start the event loop
 
+    print(shorun.errors)
     for c_id, c_info in list(shorun.results.items()):
         for key in c_info:
             print(("SWITCH: {} command: {}\n {}".format(c_id, key.decode('utf-8'),
