@@ -18,7 +18,9 @@ from twisted.python import log
 class diagDebug(ReactorlessCommando):
     def to_fortinet(self, dev, commands=None, extra=None):
         self.creds=get_device_password('fortinet')
-        commands = [b'get router info routing-table database']
+        commands = [b'get router info routing-table database',
+                    b'diagnose sys sdwan health-check', #check sdwan ip sla probess\
+                    b'get router info kernel 17'] #show sdwan ip sla routes
         return commands
 
 

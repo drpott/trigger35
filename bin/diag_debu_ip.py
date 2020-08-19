@@ -16,13 +16,18 @@ from twisted.internet import reactor, defer
 from twisted.python import log
 
 class diagDebug(ReactorlessCommando):
+    """
+    if fortigate is dropping packets debug packet flow can show the reason and how
+    cpu is handling each packet
+    """
     def to_fortinet(self, dev, commands=None, extra=None):
         self.creds=get_device_password('fortinet')
-        commands = [b'diagnose debug enable',
+        commands = [b'diagnose debug enable', #disable
                     b'diagnose debug flow filter addr 220.233.199.237',
                     #b'diagnose debug flow filter port 4443',
                     b'diagnose debug flow trace start 100',
-                    b'\n'
+                    b'diagnose debug flow trace stop',
+
         ]
         return commands
 

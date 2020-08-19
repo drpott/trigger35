@@ -18,16 +18,10 @@ from twisted.python import log
 class diagDebug(ReactorlessCommando):
     def to_fortinet(self, dev, commands=None, extra=None):
         self.creds=get_device_password('fortinet')
-        commands = [b'config log memory setting',
-                    b'set status enable',
-                    b'end',
-                    b'get log memory filter',
-                    b'config log memory filter',
-                    b'set severity information',
-                    b'end',
-                    b'execute log filter field srcip '+sys.argv[1].encode('utf-8'),
-                    b'execute log display'
-        ]
+        commands = [b'diagnose sys session filter src 10.65.64.1',
+                    b'diagnose sys session filter dst 8.8.8.8',
+                    ] #proto_state for tcp 1 established, 2 syn sent, 3 syn/ack, 5 time wait, 6 close
+        # first digit is server second is client
         return commands
 
 

@@ -18,16 +18,7 @@ from twisted.python import log
 class diagDebug(ReactorlessCommando):
     def to_fortinet(self, dev, commands=None, extra=None):
         self.creds=get_device_password('fortinet')
-        commands = [b'config log memory setting',
-                    b'set status enable',
-                    b'end',
-                    b'get log memory filter',
-                    b'config log memory filter',
-                    b'set severity information',
-                    b'end',
-                    b'execute log filter field srcip '+sys.argv[1].encode('utf-8'),
-                    b'execute log display'
-        ]
+        commands = [b'get sys session list', b'diag sys session stat']
         return commands
 
 
