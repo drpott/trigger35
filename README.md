@@ -24,8 +24,8 @@ To run this project:
 
 ## Configuration
 Following must be done to run this thing:
-     * update hosts file if you need
-     * change path trigger location in following py scripts: (work in progress, until better method)
+* update hosts file if you need
+* change path trigger location in following py scripts: (work in progress, until better method)
      ```
         trigger/bin/*.py,
         trigger/config/settings.py and
