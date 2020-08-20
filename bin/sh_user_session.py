@@ -6,8 +6,6 @@ sys.path.append(r'/home/dan/python35/trigger35')
 """
 commando_reactorless.py - Running multiple Commando's in the same script
 """
-import sys
-sys.path.append(r'/home/dan/python35/trigger35')
 
 from trigger.cmds import ReactorlessCommando
 from trigger.tacacsrc import get_device_password
@@ -18,18 +16,18 @@ from twisted.python import log
 class showUserSessionList(ReactorlessCommando):
 
     def to_adtran(self, dev, commands=None, extra=None):
-        cmds = [b'show users']
+        cmds = ['show users']
         if dev.deviceType == 'OLT':
             self.creds = get_device_password('olt')
         return cmds
     
     def to_juniper(self, dev, commands=None, extra=None):
-        cmds = [b'show system users']
+        cmds = ['show system users']
         self.creds = creds=get_device_password('tor')
         return cmds
 
     def to_fortinet(self, dev, commands=None, extra=None):
-        commands = [b'get system admin list']
+        commands = ['get system admin list']
         self.creds = get_device_password('fortinet')
 
         return commands
@@ -46,7 +44,7 @@ def printResults(cmd):
     for c_id, c_info in cmd.results.items():
         for key in c_info:
             print("DEV: {}   CMD: {}\n{}".format(c_id,
-                                                 key.decode('utf-8'),
+                                                 key,
                                                  c_info[key].decode('utf-8')))
 
 

@@ -222,11 +222,11 @@ def pty_connect(device, action, creds=None, display_banner=None, ping_test=False
 
     if not creds and (device.is_olt() or device.is_firewall()):
         creds = tacacsrc.get_device_password(device.nodeName)
-        
+       
     # SSH?
     if device.can_ssh_pty():
         log.msg('[%s] SSH connection test PASSED' % device)
-        
+       
         factory = TriggerSSHPtyClientFactory(d, action, creds, display_banner, init_commands, device=device)
         port = device.nodePort or settings.SSH_PORT
         log.msg('Trying SSH to %s:%s' % (device, port), debug=True)
@@ -1274,7 +1274,7 @@ class TriggerSSHChannelBase(channel.SSHChannel, TimeoutMixin):
             self._send_next()
         else:
             log.msg('[%s] Sending SSH command %r' % (self.device, next_command))
-            self.write(next_command + self.device.delimiter)
+            self.write(next_command.encode('utf-8') + self.device.delimiter)
 
     def loseConnection(self):
         """
@@ -1898,7 +1898,7 @@ class IoslikeSendExpect(protocol.Protocol, TimeoutMixin):
             self._send_next()
         else:
             log.msg('[%s] Sending command %r' % (self.device, next_command))
-            self.write(next_command + self.device.delimiter)
+            self.write(next_command.encode('utf-8') + self.device.delimiter)
 
     def timeoutConnection(self):
         """Do this when we timeout."""

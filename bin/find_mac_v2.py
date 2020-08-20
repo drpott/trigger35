@@ -7,6 +7,7 @@ from trigger.cmds import ReactorlessCommando
 from trigger.tacacsrc import get_device_password
 from twisted.internet import reactor, defer
 from twisted.python import log
+from tools.pprint import printResults
 
 #MAC='00:24:45' # ADTRAN switches
 #MAC='64:9f:f7' # KONE
@@ -26,18 +27,18 @@ class findMacAddress(ReactorlessCommando):
     """Execute on a list of devices."""
 
     def to_adtran(self, dev, commands=None, extra=None):
-        cmds = [b'show mac address-table | include '+self.commands]
+        cmds = ['show mac address-table | include '+self.commands]
         if dev.deviceType == 'OLT':
             self.creds = get_device_password('olt')
         return cmds
     
     def to_juniper(self, dev, commands=None, extra=None):
-        cmds = [b'show ethernet-switching table | match '+self.commands]
+        cmds = ['show ethernet-switching table | match '+self.commands]
         self.creds = creds=get_device_password('tor')
         return cmds
 
     def to_fortinet(self, dev, commands=None, extra=None):
-        cmds = [b'get system arp | grep '+self.commands]
+        cmds = ['get system arp | grep '+self.commands]
         self.creds=get_device_password('fortinet')
         return cmds
     
@@ -47,12 +48,6 @@ def stop_reactor(result):
         reactor.stop()
     return result
 
-def printResults(cmd):
-    for c_id, c_info in cmd.results.items():
-        for key in c_info:
-            print("DEV: {}   CMD: {}\n{}".format(c_id,
-                                                 key.decode('utf-8'),
-                                                 c_info[key].decode('utf-8')))
 
 if __name__ == '__main__':
 
@@ -71,7 +66,7 @@ if __name__ == '__main__':
         "fortinet",            "olt",
     ]
     
-    c1 = findMacAddress(dev_list, commands=sys.argv[1].encode('utf-8') )
+    c1 = findMacAddress(dev_list, commands=sys.argv[1] )
     instances = [c1]
     # Once every task has returned a result, stop the reactor
     deferreds = []
