@@ -21,15 +21,21 @@ To run this project:
    $ pip install twisted crochet IPy pyasn1 SimpleParse pytz cryptography bcrypt
    $ gpg2 --gen-key (make sure user is 5 chars long and change in settings.py to reflect user/pass)
 ```
-   Update /etc/hosts file and py scripts location in: (work in progress, until better method)
-     * bin/*.py,
-     * trigger/config/settings.py and
-     * trigger/conf/__init__.py
 
-## for emacs IDE
-Take init.el from:
+## Configuration
+Following must be done to run this thing:
+     * update hosts file if you need
+     * change path trigger location in following py scripts: (work in progress, until better method)
+     ```
+        trigger/bin/*.py,
+        trigger/config/settings.py and
+        trigger/conf/__init__.py
+     ```
+
+## IDE
+Take emacs init.el from my environ dir, based on:
 * https://realpython.com/emacs-the-best-python-editor/
-Also in myenviron directory
+* whilst in emacs:
 ```
     M-x venv-work on py37
     M-x elpy-config
