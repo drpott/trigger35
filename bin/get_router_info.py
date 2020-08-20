@@ -1,8 +1,4 @@
 #!/usr/bin/env python
-
-import sys
-sys.path.append(r'/home/dan/python35/trigger35')
-
 """
 commando_reactorless.py - Running multiple Commando's in the same script
 """
@@ -14,13 +10,14 @@ from trigger.tacacsrc import get_device_password
 from trigger.netdevices import NetDevices
 from twisted.internet import reactor, defer
 from twisted.python import log
+from tools.pprint import printResults
 
 class diagDebug(ReactorlessCommando):
     def to_fortinet(self, dev, commands=None, extra=None):
         self.creds=get_device_password('fortinet')
-        commands = [b'get router info routing-table database',
-                    b'diagnose sys sdwan health-check', #check sdwan ip sla probess\
-                    b'get router info kernel 17'] #show sdwan ip sla routes
+        commands = ['get router info routing-table database',
+                    'diagnose sys sdwan health-check', #check sdwan ip sla probess\
+                    'get router info kernel 17'] #show sdwan ip sla routes
         return commands
 
 
@@ -29,14 +26,6 @@ def stop_reactor(result):
         log.msg('STOPPING REACTOR!')
         reactor.stop()
     return result
-
-
-def printResults(cmd):
-    for c_id, c_info in cmd.results.items():
-        for key in c_info:
-            print("DEV: {}   CMD: {}\n{}".format(c_id,
-                                                 key.decode('utf-8'),
-                                                 c_info[key].decode('utf-8')))
 
 
 if __name__ == '__main__':

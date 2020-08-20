@@ -12,6 +12,7 @@ from trigger.tacacsrc import get_device_password
 from trigger.netdevices import NetDevices
 from twisted.internet import reactor, defer
 from twisted.python import log
+from tools.pprint import printResults
 
 class showUserSessionList(ReactorlessCommando):
 
@@ -39,13 +40,6 @@ def stop_reactor(result):
         reactor.stop()
     return result
 
-
-def printResults(cmd):
-    for c_id, c_info in cmd.results.items():
-        for key in c_info:
-            print("DEV: {}   CMD: {}\n{}".format(c_id,
-                                                 key,
-                                                 c_info[key].decode('utf-8')))
 
 
 if __name__ == '__main__':
