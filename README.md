@@ -1,5 +1,7 @@
 # trigger35 using Python 3.x
-network automation using trigger and python 3.x for me
+* network automation based on trigger
+* converted trigger to run on python 3.x
+* deleted some functions from original project (don't use ACLs, change mgmt etc..)
 
 ## Technologies and requirements
 Project is created with:
