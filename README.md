@@ -20,7 +20,7 @@ To run this project:
    $ git clone https://github.com/drpott/trigger35.git
    $ cd trigger35
    $ conda activate py37
-   $ pip install twisted crochet IPy pyasn1 SimpleParse pytz cryptography bcrypt
+   $ pip install twisted crochet IPy pyasn1 SimpleParse pytz cryptography bcrypt textfsm
    $ gpg2 --gen-key (make sure user is 5 chars long and change in settings.py to reflect user/pass)
 ```
 
