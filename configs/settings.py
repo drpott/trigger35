@@ -13,7 +13,8 @@ import socket
 #===============================
 
 # This is where Trigger should look for its files.
-PREFIX = '/home/dan/python35/trigger35/configs'
+#PREFIX = '/home/dan/python35/trigger35/configs'
+PREFIX = os.getenv('TRIGGER_PREFIX')
 
 # Set to True to enable GPG Authentication
 # Set to False to use the old .tackf encryption method.

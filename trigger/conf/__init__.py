@@ -28,7 +28,8 @@ from trigger.utils.importlib import import_module_from_path
 import warnings
 
 # Defaults
-DEFAULT_LOCATION = '/home/dan/python35/trigger35/configs/settings.py'
+#DEFAULT_LOCATION = '/home/dan/python35/trigger35/configs/settings.py'
+DEFAULT_LOCATION = '/etc/trigger/settings.py'
 ENVIRONMENT_VARIABLE = 'TRIGGER_SETTINGS'
 SETTINGS_FILE = os.environ.get(ENVIRONMENT_VARIABLE, DEFAULT_LOCATION)
 
