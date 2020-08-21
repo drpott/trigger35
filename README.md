@@ -36,7 +36,7 @@ Following must be done to run this thing in your environment:
      ```
      
 * edit files (set/unset env variables) in your conda env, eg:
-      ```
+     ```
       
       vi ./etc/conda/activate.d/env_vars.sh
 
