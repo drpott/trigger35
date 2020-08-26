@@ -43,13 +43,14 @@ Following must be done to run this thing in your environment:
       export TRIGGER_SETTINGS='<path to>/trigger35/configs/settings.py'#trigger settings file location
       export TRIGGER_PREFIX='<path to>python35/trigger35/configs'      #trigger looks for config files here eg. netdevices.json
       export TRIGGER_PATH='<path to>/trigger35'                        #python looks for trigger modules here
-      export PATH=/home/dan/python35/trigger35/bin:$PATH               #add trigger bin dir for convenience
+      export PATH='<path to>/trigger35/bin':$PATH                      #add trigger bin dir to PATH for convenience
 
       vi ./etc/conda/deactivate.d/env_vars.sh
 
       unset TRIGGER_SETTINGS
       unset TRIGGER_PREFIX
       unset TRIGGER_PATH
+      export PATH=$(echo $PATH | sed -e 's/\/<path to>\/trigger35\/bin://g')
      ```
 
 * update system ```/etc/hosts``` file if you need
