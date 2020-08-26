@@ -50,9 +50,10 @@
 (global-set-key (kbd "S-C-<right>") 'enlarge-window-horizontally)
 (global-set-key (kbd "S-C-<down>") 'shrink-window)
 (global-set-key (kbd "S-C-<up>") 'enlarge-window)
+(exec-path-from-shell-copy-env "PATH")
 
 ;; ====================================
-;; Development Setup
+;; DEVELOPMENT Setup
 ;; ====================================
 
 ;; Enable elpy
@@ -82,3 +83,4 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+(put 'narrow-to-region 'disabled nil)
