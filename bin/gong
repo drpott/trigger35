@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 """
 gong (go ng) - Command-line client to log in to network devices using TACACS credentials.
 
@@ -19,7 +17,7 @@ __version__ = '2.0'
 from optparse import OptionParser
 import os
 import sys
-sys.path.append(r'/home/dan/python35/trigger35')
+sys.path.append(r'/home/dpottumati/py-envs/trigger35/')
 from twisted.python import log
 from trigger.netdevices import device_match
 from trigger.utils.cli import print_severed_head

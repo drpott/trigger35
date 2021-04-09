@@ -40,17 +40,24 @@ Following must be done to run this thing in your environment:
       
       vi ./etc/conda/activate.d/env_vars.sh
       #!/bin/bash
-      export TRIGGER_SETTINGS='<path to>/trigger35/configs/settings.py'#trigger settings file location
-      export TRIGGER_PREFIX='<path to>python35/trigger35/configs'      #trigger looks for config files here eg. netdevices.json
-      export TRIGGER_PATH='<path to>/trigger35'                        #python looks for trigger modules here
-      export PATH='<path to>/trigger35/bin':$PATH                      #add trigger bin dir to PATH for convenience
+        export TRIGGER_SETTINGS='/home/user/py-envs/trigger35/configs/settings.py'#trigger settings file location
+        export TRIGGER_PREFIX='/home/user/py-envs/trigger35/configs'              #trigger looks for config files here eg. netdevices.json
+	export TRIGGER_PATH='/home/user/py-envs/trigger35'                        #python looks for trigger modules here
+ 	export PATH='/home/user/py-envs/trigger35/bin':$PATH         
+ 	export GPGUSER='user'                                                     #gpg user created above or imported (must trust the key first)
+ 	read -sp "Keyring key: " GPGKEY                                                 #secret key in variable bad idea
+ 	echo -e
+ 	export GPGKEY
 
       vi ./etc/conda/deactivate.d/env_vars.sh
-
-      unset TRIGGER_SETTINGS
-      unset TRIGGER_PREFIX
-      unset TRIGGER_PATH
-      export PATH=$(echo $PATH | sed -e 's/\/<path to>\/trigger35\/bin://g')
+      #!/bin/bash
+        unset TRIGGER_SETTINGS
+        unset TRIGGER_PREFIX
+        unset TRIGGER_PATH
+	unset GPGUSER
+	unset GPGKEY
+	export PATH=$(echo $PATH | sed -e 's/\/home\/dpottumati\/py-envs\/trigger35\/bin://g')
+							
      ```
 
 * update system ```/etc/hosts``` file if you need
@@ -58,7 +65,6 @@ Following must be done to run this thing in your environment:
 * in your bin/*.py file you must add the path to trigger35, first liner:
      ```
      import sys
-     sys.path.append(r'<path to>/python35/trigger35') or
      sys.path.append(os.getenv(TRIGGER_PATH)) #untested
      ````
 

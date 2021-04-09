@@ -14,6 +14,7 @@ import pwd, sys, subprocess, os, getpass
 from twisted.python import log
 from trigger.conf import settings
 import shlex
+
 # Exports
 __all__ = ('get_device_password', 'prompt_credentials',
            'update_credentials', 'validate_credentials',
@@ -193,7 +194,8 @@ def _gpg_pipe(file_name, gpguser, gpgkey, data=None):
         out, err = p.communicate()
 
     if not p.returncode == 0:
-        raise RuntimeError("Error %s" % (err))
+        print(gpguser, gpgkey)
+        raise RuntimeError(err.decode())
     
     return out
 
@@ -215,13 +217,18 @@ class Tacacsrc(object):
         Open .tacacsrc (tacacsrc_file or $TACACSRC or ~/.tacacsrc), or create
         a new file if one cannot be found on disk.
 
+        self.gpguser = settings.TACACSRC_GPG_USER
+        self.gpgkey = settings.TACACSRC_PASSPHRASE
+
         """
 
         self.file_name = tacacsrc_file
         self.generate_new = generate_new
         self.userinfo = pwd.getpwuid(os.getuid())
-        self.gpguser = settings.TACACSRC_GPG_USER
-        self.gpgkey = settings.TACACSRC_PASSPHRASE
+
+        self.gpguser = os.getenv('GPGUSER')
+        self.gpgkey = os.getenv('GPGKEY')
+
         self.username = self.userinfo.pw_name
         self.user_home = self.userinfo.pw_dir
         self.data = []

@@ -283,25 +283,25 @@ class Commando(object):
 
             # Setup the async Deferred object with a timeout and error printing.
             commands = self.generate(device)
-            async = device.execute(commands, creds=self.creds, incremental=self.incremental,
+            my_async = device.execute(commands, creds=self.creds, incremental=self.incremental,
                                    timeout=self.timeout, with_errors=self.with_errors,
                                    force_cli=self.force_cli, command_interval=self.command_interval)
 
             # Add the template parser callback for great justice!
-            async.addCallback(self.parse_template, device, commands)
+            my_async.addCallback(self.parse_template, device, commands)
 
             # Add the parser callback for even greater justice!
-            async.addCallback(self.parse, device, commands)
+            my_async.addCallback(self.parse, device, commands)
 
             # If parse fails, still decrement and track the error
-            async.addErrback(self.errback, device)
+            my_async.addErrback(self.errback, device)
 
             # Make sure any further uncaught errors get logged
-            async.addErrback(log.err)
+            my_async.addErrback(log.err)
 
             # Here we addBoth to continue on after pass/fail, decrement the connections and move on.
-            async.addBoth(self._decrement_connections)
-            async.addBoth(lambda x: self._add_worker())
+            my_async.addBoth(self._decrement_connections)
+            my_async.addBoth(lambda x: self._add_worker())
 
         # Do this once we've exhausted the job queue
         else:

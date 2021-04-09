@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-import sys
-sys.path.append(r'/home/dan/python35/trigger35')
+import sys, os
+#sys.path.append(r'/home/dpottumati/py-envs/trigger35/')
+sys.path.append(os.getenv('TRIGGER_PATH'))
 
 from trigger.cmds import ReactorlessCommando
 from trigger.tacacsrc import get_device_password

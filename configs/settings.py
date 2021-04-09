@@ -20,7 +20,7 @@ PREFIX = os.getenv('TRIGGER_PREFIX')
 # Set to False to use the old .tackf encryption method.
 # Should be False unless instructions/integration is ready for GPG
 USE_GPG_AUTH = False
-TACACSRC_GPG_USER = 'daniel'
+TACACSRC_GPG_USER = 'dpottumati'
 
 # This is used for old auth method. It sucks and needs to die.
 # TODO (jathan): This is deprecated. Remove all references to this and make GPG
@@ -35,11 +35,11 @@ TACACSRC_USE_PASSPHRASE = False
 # Use this passphrase to encrypt credentials.CHANGE THIS IN YOUR FILE BEFORE
 # USING THIS IN YOUR ENVIRONMENT.
 #TACACSRC_PASSPHRASE = 'bacon is awesome, son.' # NYI
-TACACSRC_PASSPHRASE = 'abc123'
+TACACSRC_PASSPHRASE = 'pinkBits23.'
 
 # Default login realm to store user credentials (username, password) for
 # general use within the .tacacsrc
-DEFAULT_REALM = 'aol'
+DEFAULT_REALM = 'mkpark'
 
 # Location of firewall policies
 FIREWALL_DIR = '/data/firewalls'
