@@ -27,6 +27,7 @@
     {"nodeName": "ESNH-BAS-BLG1B-L2-01", "manufacturer": "ADTRAN", "make": "ADTRAN", "model": "SDX8110", "deviceType": "SWITCH", "site": "ESNH Bldg 1A", "serialNumber": "ADTN191706d2", "comment": "'OLT interface -> '", "ipAddr": "10.65.60.1"},
     {"nodeName": "ESNH-BAS-BLG1-L2-01", "manufacturer": "ADTRAN", "make": "ADTRAN", "model": "SDX8110", "deviceType": "SWITCH", "site": "ESNH Bldg 1A", "serialNumber": "ADTN191706d2", "comment": "'OLT interface -> '", "ipAddr": "10.65.60.1"},
     {"nodeName": "ESNH-BAS-BLG1-L3-01", "manufacturer": "ADTRAN", "make": "ADTRAN", "model": "SDX8110", "deviceType": "SWITCH", "site": "ESNH Bldg 1A", "serialNumber": "ADTN191706d2", "comment": "'OLT interface -> '", "ipAddr": "10.65.60.1"},
+    {"nodeName": "ESNH-BAS-BLG1-L7-01", "manufacturer": "ADTRAN", "make": "ADTRAN", "model": "SDX8110", "deviceType": "SWITCH", "site": "ESNH Bldg 1A", "serialNumber": "ADTN191706d2", "comment": "'OLT interface -> '", "ipAddr": "10.65.60.1"},
 
 
     {"nodeName": "fortinet", "manufacturer": "FORTINET", "operatingSystem": "FORTIOS", "deviceType": "FIREWALL",  "model":"FG100", "comment": "", "ipAddr": "10.65.65.1"},

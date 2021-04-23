@@ -399,7 +399,8 @@ PROMPT_PATTERNS = {
     'paloalto': r'\r\n\S+(?:\>|#)\s?$',
     'pica8': r'\S+(?:\>|#)\s?$',
     'checkpoint' : r'\S+>\s+$',
-    'fortinet': r'\S+\s+#\s+$',
+    #'fortinet': r'\S+\s+#\s+$',
+    'fortinet': r'\S+\s(?:\$|#)\s+$',
 }
 
 # When a pattern is not explicitly defined for a vendor, this is what we'll try
