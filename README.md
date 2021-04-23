@@ -56,7 +56,7 @@ Following must be done to run this thing in your environment:
         unset TRIGGER_PATH
         unset GPGUSER
         unset GPGKEY
-        export PATH=$(echo $PATH | sed -e 's/\/home\/dpottumati\/py-envs\/trigger35\/bin://g')
+        export PATH=$(echo $PATH | sed -e 's/\/home\/<path to>\/trigger35\/bin://g')
 							
      ```
 
@@ -65,7 +65,7 @@ Following must be done to run this thing in your environment:
 * in your bin/*.py file you must add the path to trigger35, first liner:
      ```
      import sys
-     sys.path.append(os.getenv(TRIGGER_PATH))
+     sys.path.append(os.getenv('TRIGGER_PATH'))
      ````
 
 ## IDE
