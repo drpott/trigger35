@@ -19,8 +19,8 @@ PREFIX = os.getenv('TRIGGER_PREFIX')
 # Set to True to enable GPG Authentication
 # Set to False to use the old .tackf encryption method.
 # Should be False unless instructions/integration is ready for GPG
-USE_GPG_AUTH = False
-TACACSRC_GPG_USER = 'dpottumati'
+# USE_GPG_AUTH = False
+# TACACSRC_GPG_USER = '' not used anymore
 
 # This is used for old auth method. It sucks and needs to die.
 # TODO (jathan): This is deprecated. Remove all references to this and make GPG
@@ -30,16 +30,22 @@ TACACSRC = os.getenv('TACACSRC', os.path.join(USER_HOME, '.tacacsrc'))
 TACACSRC_KEYFILE = os.getenv('TACACSRC_KEYFILE', os.path.join(PREFIX, '.tackf'))
 
 # If set, use the TACACSRC_PASSPHRASE, otherwise default to TACACSRC_KEYFILE
-TACACSRC_USE_PASSPHRASE = False
+# TACACSRC_USE_PASSPHRASE = False
 
 # Use this passphrase to encrypt credentials.CHANGE THIS IN YOUR FILE BEFORE
 # USING THIS IN YOUR ENVIRONMENT.
-#TACACSRC_PASSPHRASE = 'bacon is awesome, son.' # NYI
-TACACSRC_PASSPHRASE = 'pinkBits23.'
+# TACACSRC_PASSPHRASE = 'bacon is awesome, son.' # NYI
+# TACACSRC_PASSPHRASE = '' not used
 
 # Default login realm to store user credentials (username, password) for
 # general use within the .tacacsrc
-DEFAULT_REALM = 'mkpark'
+#DEFAULT_REALM = 'mkpark'
+#DEFAULT_REALM = 'icn'
+#DEFAULT_REALM = 'icncastletowers'
+#DEFAULT_REALM = 'icnwpsc'
+#DEFAULT_REALM = 'icnccsc'
+DEFAULT_REALM = 'icnesnh'
+
 
 # Location of firewall policies
 FIREWALL_DIR = '/data/firewalls'
