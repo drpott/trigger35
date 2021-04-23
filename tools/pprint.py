@@ -9,17 +9,17 @@ def printResults(cmd):
 
     """
     
-    print("\n\n########RESULTS:")
+    print("\n\n[++] RESULTS:")
     for c_id, c_info in cmd.results.items():
         for key in c_info:
-            print("DEV: {}   CMD: {}\n{}".format(c_id,
-                                                 key,
-                                                 c_info[key].decode('utf-8')))
+            print("[+] DEV: {}   CMD: {}\n{}".format(c_id,
+                                                     key,
+                                                     c_info[key].decode('utf-8')))
 
     if len(cmd.errors) != 0:
-        print("########ERRORS:")
+        print("[++] ERRORS:")
         #print(cmd.errors.items())
         for c_id, c_info in cmd.errors.items():
-            print(c_id, c_info)
+            print("[+]" + c_id, c_info)
     else:
-        print("########No errors")
+        print("[++] No errors")
