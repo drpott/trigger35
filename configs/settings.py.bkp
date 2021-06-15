@@ -13,22 +13,14 @@ import socket
 #===============================
 
 # This is where Trigger should look for its files.
-#PREFIX = '/home/drpottumati/Documents/trigger35/configs'
+#PREFIX = '/home/dan/python35/trigger35/configs'
 PREFIX = os.getenv('TRIGGER_PREFIX')
 
 # Set to True to enable GPG Authentication
 # Set to False to use the old .tackf encryption method.
 # Should be False unless instructions/integration is ready for GPG
-USE_GPG_AUTH = False
-#TACACSRC_GPG_USER = 'drpott'
-
-# Default login realm to store user credentials (username, password) for
-# general use within the .tacacsrc (do not use _ underscore here)
-#DEFAULT_REALM = 'icn'
-#DEFAULT_REALM = 'icncastletowers'
-#DEFAULT_REALM = 'icnwpsc'
-#DEFAULT_REALM = 'icnccsc'
-DEFAULT_REALM = 'icnesnh'
+# USE_GPG_AUTH = False
+# TACACSRC_GPG_USER = '' not used anymore
 
 # This is used for old auth method. It sucks and needs to die.
 # TODO (jathan): This is deprecated. Remove all references to this and make GPG
@@ -38,12 +30,21 @@ TACACSRC = os.getenv('TACACSRC', os.path.join(USER_HOME, '.tacacsrc'))
 TACACSRC_KEYFILE = os.getenv('TACACSRC_KEYFILE', os.path.join(PREFIX, '.tackf'))
 
 # If set, use the TACACSRC_PASSPHRASE, otherwise default to TACACSRC_KEYFILE
-TACACSRC_USE_PASSPHRASE = False
+# TACACSRC_USE_PASSPHRASE = False
 
 # Use this passphrase to encrypt credentials.CHANGE THIS IN YOUR FILE BEFORE
 # USING THIS IN YOUR ENVIRONMENT.
-#TACACSRC_PASSPHRASE = 'bacon is awesome, son.' # NYI
-TACACSRC_PASSPHRASE = 'abc123'
+# TACACSRC_PASSPHRASE = 'bacon is awesome, son.' # NYI
+# TACACSRC_PASSPHRASE = '' not used
+
+# Default login realm to store user credentials (username, password) for
+# general use within the .tacacsrc
+#DEFAULT_REALM = 'mkpark'
+#DEFAULT_REALM = 'icn'
+DEFAULT_REALM = 'icncastletowers'
+#DEFAULT_REALM = 'icnwpsc'
+#DEFAULT_REALM = 'icnccsc'
+#DEFAULT_REALM = 'icnesnh'
 
 
 # Location of firewall policies
@@ -82,9 +83,9 @@ SUPPORTED_PLATFORMS = {
     'checkpoint': ['FIREWALL'],
     'fortinet': ['FIREWALL'],
     'pica8': ['ROUTER', 'SWITCH'],
-    'adtran': ['OLT', 'SWITCH'],
     'huawei': ['FIREWALL', 'SWITCH'],
-    'ruckus': ['SWITCH'],
+
+    'adtran': ['OLT', 'SWITCH'],
 }
 
 # List of supported vendor names derived from SUPPORTED_PLATFORMS
@@ -119,8 +120,6 @@ VENDOR_MAP = {
     'NETSCREEN TECHNOLOGIES': 'netscreen',
     'PICA8': 'pica8',
     'ADTRAN': 'adtran',
-    'HUAWEI': 'huawei',
-    'RUCKUS': 'ruckus',
 }
 
 # The tuple of support device types
@@ -158,8 +157,6 @@ DEFAULT_TYPES = {
     'paloalto': 'FIREWALL',
     'pica8': 'SWITCH',
     'adtran': 'SWITCH',
-    'huawei': 'SWITCH',
-    'ruckus': 'SWITCH',
 }
 
 # When a vendor is not explicitly defined within `DEFAULT_TYPES`, fallback to
@@ -201,8 +198,6 @@ SSH_PTY_DISABLED = {
     'cisco': ['SWITCH','OLT'],
     'netscreen': ['FIREWALL'],
     'adtran': ['SWITCH', 'OLT'],
-    'huawei': ['SWITCH',],
-    'ruckus': ['SWITCH',],
 }
 
 # A mapping of vendors to the types of devices for that vendor for which you
@@ -213,8 +208,6 @@ SSH_ASYNC_DISABLED = {
     'foundry': ['SWITCH'], # Old Foundry switches only do SSHv1
     'cisco': ['SWITCH', 'OLT'],
     'adtran': ['SWITCH', 'OLT'],
-    'huawei': ['SWITCH'],
-    'ruckus': ['SWITCH',],
 }
 
 # Vendors that basically just emulate Cisco's IOS and can be treated
@@ -230,8 +223,6 @@ IOSLIKE_VENDORS = (
     'force10',
     'foundry',
     'adtran',
-    'huawei',
-    'ruckus',
 )
 
 
@@ -264,9 +255,7 @@ STARTUP_COMMANDS_MAP = {
     'netscreen': ['set console page 0'],
     'paloalto': ['set cli scripting-mode on', 'set cli pager off'],
     'adtran': [b'terminal length 0'],
-    'fortinet': [b'config system console', b'set output standard', b'end',],
-    'huawei': [b'undo smart', b'undo interactive', b'scroll'],
-    'ruckus': [b'skip-page-display'],
+    'fortinet': [b'config system console', b'set output standard', b'end',]
 }
 
 # Prompts sent by devices that indicate the device is awaiting user
@@ -366,7 +355,6 @@ TEXTFSM_VENDOR_MAPPINGS = {
     "arista": [ "eos" ],
     "fortinet": [ "fortios"],
     "adtran": ["aos"],
-    "ruckus": ["icx"],
 }
 
 # TextFSM Template Path. Commando will attempt to match a given show command with a template within this folder.
@@ -415,7 +403,6 @@ PROMPT_PATTERNS = {
     'checkpoint' : r'\S+>\s+$',
     #'fortinet': r'\S+\s+#\s+$',
     'fortinet': r'\S+\s(?:\$|#)\s+$',
-
 }
 
 # When a pattern is not explicitly defined for a vendor, this is what we'll try

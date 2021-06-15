@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
 import sys, os
-#sys.path.append(r'/home/dpottumati/py-envs/trigger35/')
-#below works now
 sys.path.append(os.getenv('TRIGGER_PATH'))
 
 from trigger.cmds import ReactorlessCommando

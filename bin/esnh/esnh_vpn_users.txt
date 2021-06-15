@@ -1,0 +1,88 @@
+edit CCTV_VPN_1
+set type password
+set passwd FbU3Ngbx
+next
+edit IP_INTERCOM_VPN_1
+set type password
+set passwd HaU56gbx
+next
+edit ACCESS_CONTROL_VPN_1
+set type password
+set passwd HaU3Ncvx
+next
+edit EV_CHARGING_VPN_1
+set type password
+set passwd HaU3N345x
+next
+edit BMS_VPN_1
+set type password
+set passwd HaU3Ndbx
+next
+edit OIP_VPN_1
+set type password
+set passwd HaTDFNgbx
+next
+edit HYDRAULICS_VPN_1
+set type password
+set passwd Ha6Yu3Ngbx
+next
+edit AIR_CON_VPN_1
+set type password
+set passwd HaU47Hgbx
+next
+edit CAR_PARK_VPN_1
+set type password
+set passwd 3RT3Ngbx
+next
+edit VOIP_VPN_1
+set type password
+set passwd AjT3Ngbx
+next
+edit LIFTS_VPN_1
+set type password
+set passwd Rth3Ngbx
+next
+edit WASTE_MONITOR_VPN_1
+set type password
+set passwd HRTY3Ngbx
+next
+edit SOLAR_VPN_1	
+set type password
+set passwd Hasdfgbx
+next
+edit LIGHTING_VPN_1
+set type password
+set passwd Hahekgbx
+next
+edit DIGITAL_SIGNAGE_VPN_1
+set type password
+set passwd Haasdkgbx
+next
+edit AUDIO_SPEAKER_VPN_1			
+set type password
+set passwd HaURasbx
+next
+edit PEOPLE_COUNTING_VPN_1			
+set type password
+set passwd HaUYUibx
+next
+edit IRRIGATION_VPN_1		
+set type password
+set passwd HaU7KElbx
+next
+edit NOTICEBOARD_VPN_1				
+set type password
+set passwd HaU3Marx
+next
+edit CMO_VPN_1
+set type password
+set passwd HaUUUxEx
+next
+edit CCTV_VPN_1
+set type password
+set passwd HaAuckx
+next
+edit IP_INTERCOM_VPN_1
+set type password
+set passwd HaUKakbx
+next

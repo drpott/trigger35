@@ -145,6 +145,7 @@ def send_enable(proto_obj, disconnect_on_fail=True):
     log.msg('[%s] Enable required, sending enable commands' % proto_obj.device)
     # Get enable password from env. or device object
     device_pw = getattr(proto_obj.device, 'enablePW', None)
+    print(device_pw)
     enable_pw = bytes(os.getenv('TRIGGER_ENABLEPW') or device_pw, 'utf-8')
 
     if enable_pw is not None:
@@ -168,10 +169,10 @@ def send_enable(proto_obj, disconnect_on_fail=True):
         if disconnect_on_fail:
             proto_obj.loseConnection()
 
-
+            
 def stop_reactor():
     """Stop the reactor if it's already running."""
-
+    
     from twisted.internet import reactor
     if reactor.running:
         log.msg('Stopping reactor')
@@ -210,7 +211,7 @@ def pty_connect(device, action, creds=None, display_banner=None, ping_test=False
 
     :returns: A Twisted ``Deferred`` object
     """
-
+    
     d = defer.Deferred()
     # Only proceed if ping succeeds
     if ping_test:
@@ -581,6 +582,7 @@ def execute_async_pty_ssh(device, commands, creds=None, incremental=None, with_e
 
     return execute_generic_ssh(device, commands, creds, incremental, with_errors, timeout, command_interval,
                                channel_class, prompt_pattern, method)
+
 
 
 def execute_ioslike_ssh(device, commands, creds=None, incremental=None, with_errors=False, timeout=settings.DEFAULT_TIMEOUT,
@@ -1623,9 +1625,7 @@ class TriggerTelnet(telnet.Telnet, telnet.ProtocolTransportMixin, TimeoutMixin):
         self.waiting_for = [
             (b'Username: ', self.state_username),                  # Most
             (b'\n\nUser Access Verification\n\nUsername:', self.state_username), #Adtran OLT
-            (b'\nUser Access Verification\n\nPlease Enter Login Name: ', self.state_username), #Ruckus
             (b'Username:', self.state_username),                   # Dell
-            (b'User name:', self.state_username),                   # Huawei
             (b'login: ', self.state_username),                     # EOS, JunOs
             (b'Password: ', self.state_login_pw),
             (b'Password:', self.state_login_pw),
@@ -1673,10 +1673,9 @@ class TriggerTelnet(telnet.Telnet, telnet.ProtocolTransportMixin, TimeoutMixin):
         self.waiting_for = [
             (b'Password: ', self.state_password),
             (b'Password:', self.state_password),  # Dell
-            (b'User password:', self.state_password),  # Dell
-            (b'Please Enter Password: ', self.state_password),  # ruckus
         ]
 
+        
     def state_password(self):
         """After we got password prompt, check for enabled prompt."""
         data = self.factory.creds.password + '\n'

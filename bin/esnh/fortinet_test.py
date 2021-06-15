@@ -14,25 +14,14 @@ from tools.pprint import printResults
 
 
 class shVlans(ReactorlessCommando):
-    def to_adtran(self, dev, commands=None, extra=None):
-        cmds = ['show vlan brief']
-        
-        return cmds
-
-    def to_juniper(self, dev, commands=None, extra=None):
-        cmds = ['show vlans brief']
-        self.creds = creds=get_device_password('esnh-swt-00')
-        
-        return cmds
-
     def to_fortinet(self, dev, commands=None, extra=None):
         cmds = [
-            'config vdom',
-            'edit ESNH-ICN',
-            'get system interface'
+            #'config vdom',
+            #'edit ESNH-ICN',
+            'get system admin'
         ]
         
-        self.creds=get_device_password('esnh-fwl-01')
+        self.creds=get_device_password('esnh-icn-fwl')
         return cmds
 
     
@@ -46,26 +35,8 @@ def stop_reactor(result):
 if __name__ == '__main__':
 
     dev_list = [
-        'ESNH-FWL-01',
-        'ESNH-SWT-01',
-        'ESNH-SWT-02',
-        
-        'ESNH-BAS-B1-1A-02',
-        'ESNH-BAS-G-1A-01',
-        'ESNH-BAS-G-1A-02',
-        'ESNH-BAS-B2-1A-02',
-        'ESNH-BAS-B2-1A-01',
-        'ESNH-BAS-B3-1A-02',
-        'ESNH-BAS-B1-1B-01',
-        'ESNH-BAS-B1-1B-02',
-        'ESNH-BAS-B2-1B-01',
-        'ESNH-BAS-G-1B-02',
-        'ESNH-BAS-G-1B-01',
-        'ESNH-BAS-MCR-B1-01',
-        'ESNH-BAS-BLG1B-L7-01',
-        'ESNH-BAS-MCR-B1-01',
+        'esnh-icn-fwl',
     ]
-
 
     c1 = shVlans(dev_list,)
     
